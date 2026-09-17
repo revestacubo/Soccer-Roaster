@@ -9,11 +9,9 @@
   <style>
     :root {
       --primary: #1b5e20;
-      --pitch-green: #2e7d32;
       --pitch-line: rgba(255, 255, 255, 0.65);
-      --accent: #0277bd;
-      --danger: #c62828;
       --warning: #ef6c00;
+      --danger: #c62828;
       --bg: #f4f6f8;
       --card-bg: #ffffff;
       --text: #212121;
@@ -83,7 +81,6 @@
       font-weight: 800;
       font-variant-numeric: tabular-nums;
       margin: 4px 0;
-      letter-spacing: 1px;
     }
     .timer-controls {
       display: flex;
@@ -120,9 +117,8 @@
       cursor: pointer;
       font-size: 14px;
       font-weight: 600;
-      touch-action: manipulation;
     }
-    button:active { opacity: 0.8; transform: scale(0.98); }
+    button:active { opacity: 0.8; }
     button.secondary { background-color: #546e7a; }
     button.warning { background-color: var(--warning); }
     button.danger { background-color: var(--danger); }
@@ -149,13 +145,7 @@
     .pitch-container {
       position: relative;
       background: #388e3c;
-      background-image: repeating-linear-gradient(
-        0deg,
-        #2e7d32,
-        #2e7d32 40px,
-        #388e3c 40px,
-        #388e3c 80px
-      );
+      background-image: repeating-linear-gradient(0deg, #2e7d32, #2e7d32 40px, #388e3c 40px, #388e3c 80px);
       border: 3px solid white;
       border-radius: 10px;
       padding: 16px 10px;
@@ -163,7 +153,6 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.25);
       overflow: hidden;
     }
     .pitch-container::before {
@@ -297,7 +286,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
     }
     .action-banner-text {
       font-size: 13px;
@@ -316,9 +304,6 @@
       font-weight: 800;
       color: #0d47a1;
       text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       margin-bottom: 8px;
     }
     .sub-table {
@@ -331,7 +316,6 @@
       text-align: left;
       font-size: 11px;
       color: #455a64;
-      text-transform: uppercase;
       border-bottom: 1px solid #cfd8dc;
     }
     .sub-table td {
@@ -346,9 +330,6 @@
       font-weight: 700;
       padding: 2px 6px;
       border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
     }
     .sub-tag-out {
       background: #ffebee;
@@ -357,9 +338,6 @@
       font-weight: 700;
       padding: 2px 6px;
       border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
     }
     .styled-table {
       width: 100%;
@@ -474,9 +452,7 @@
         </div>
 
         <div class="subs-card">
-          <div class="subs-title">
-            <span>🔄 Substitution Callout (Who's Coming In & Out)</span>
-          </div>
+          <div class="subs-title">🔄 Substitution Callout (Who's Coming In & Out)</div>
           <div id="subsContainer">
             <p style="color: #666; font-size: 13px; margin: 4px 0;">Tap "Generate Next Lineup" to see player substitutions.</p>
           </div>
@@ -577,9 +553,7 @@
           osc.stop(audioCtx.currentTime + offset + 0.2);
         });
         if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) {}
     }
 
     function requestNotificationPermission() {
@@ -592,20 +566,14 @@
         if (permission === "granted") {
           btn.innerText = "✓ Apple Watch Alerts Active";
           btn.style.background = "rgba(76, 175, 80, 0.4)";
-          new Notification("Fair Play Soccer", {
-            body: "Notifications enabled! Alerts will vibrate your Apple Watch."
-          });
+          new Notification("Fair Play Soccer", { body: "Notifications enabled! Alerts will vibrate your Apple Watch." });
         }
       });
     }
 
     function sendWatchNotification(title, message) {
       if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(title, {
-          body: message,
-          icon: 'https://img.icons8.com/color/96/football2--v1.png',
-          vibrate: [300, 100, 300]
-        });
+        new Notification(title, { body: message, icon: 'https://img.icons8.com/color/96/football2--v1.png' });
       }
     }
 
@@ -632,23 +600,33 @@
       }
     }
 
+    // Safe load helper
+    function safeLoad(key, fallback) {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
     let timerInterval = null;
-    let timerState = JSON.parse(localStorage.getItem('soccer_timer_v9')) || {
+    let timerState = safeLoad('soccer_timer_v10', {
       running: false,
       remaining: 6 * 60,
       totalDuration: 6 * 60,
       lastTick: null,
       shift: 1
-    };
-    let gameConfig = JSON.parse(localStorage.getItem('soccer_game_config_v9')) || {
+    });
+    let gameConfig = safeLoad('soccer_game_config_v10', {
       gameDuration: 40,
       shiftDuration: 6
-    };
-    let formation = JSON.parse(localStorage.getItem('soccer_formation_v9')) || { GK: 1, DEF: 2, MID: 2, FWD: 2 };
-    let currentAssignment = JSON.parse(localStorage.getItem('soccer_current_assignment_v9')) || { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
-    let previousAssignment = JSON.parse(localStorage.getItem('soccer_prev_assignment_v9')) || null;
+    });
+    let formation = safeLoad('soccer_formation_v10', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
+    let currentAssignment = safeLoad('soccer_current_assignment_v10', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
+    let previousAssignment = safeLoad('soccer_prev_assignment_v10', null);
 
-    let players = JSON.parse(localStorage.getItem('soccer_squad_v9')) || [
+    let defaultPlayers = [
       { id: 1, number: 7,  name: "Alex", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
       { id: 2, number: 10, name: "Sam",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
       { id: 3, number: 4,  name: "Liam", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
@@ -658,14 +636,17 @@
       { id: 7, number: 11, name: "Leo",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
       { id: 8, number: 5,  name: "Zoe",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
     ];
+    let players = safeLoad('soccer_squad_v10', defaultPlayers);
 
     function saveAll() {
-      localStorage.setItem('soccer_squad_v9', JSON.stringify(players));
-      localStorage.setItem('soccer_timer_v9', JSON.stringify(timerState));
-      localStorage.setItem('soccer_current_assignment_v9', JSON.stringify(currentAssignment));
-      localStorage.setItem('soccer_prev_assignment_v9', JSON.stringify(previousAssignment));
-      localStorage.setItem('soccer_formation_v9', JSON.stringify(formation));
-      localStorage.setItem('soccer_game_config_v9', JSON.stringify(gameConfig));
+      try {
+        localStorage.setItem('soccer_squad_v10', JSON.stringify(players));
+        localStorage.setItem('soccer_timer_v10', JSON.stringify(timerState));
+        localStorage.setItem('soccer_current_assignment_v10', JSON.stringify(currentAssignment));
+        localStorage.setItem('soccer_prev_assignment_v10', JSON.stringify(previousAssignment));
+        localStorage.setItem('soccer_formation_v10', JSON.stringify(formation));
+        localStorage.setItem('soccer_game_config_v10', JSON.stringify(gameConfig));
+      } catch (e) {}
     }
 
     function calculateFairPlay() {
@@ -867,10 +848,10 @@
           <td style="text-align: center; font-weight: bold; color: var(--primary);">${p.stats.totalMinutes || (p.stats.totalPlayed * (gameConfig.shiftDuration || 6)).toFixed(0)}m</td>
           <td style="text-align: center; font-weight: bold;">${p.stats.totalPlayed}</td>
           <td style="text-align: center; color: #666;">${p.stats.BENCH}</td>
-          <td style="text-align: center;"><span class="num-pill pos-GK">${p.stats.GK}</span></td>
-          <td style="text-align: center;"><span class="num-pill pos-DEF">${p.stats.DEF}</span></td>
-          <td style="text-align: center;"><span class="num-pill pos-MID">${p.stats.MID}</span></td>
-          <td style="text-align: center;"><span class="num-pill pos-FWD">${p.stats.FWD}</span></td>
+          <td style="text-align: center;"><span class="num-pill">${p.stats.GK}</span></td>
+          <td style="text-align: center;"><span class="num-pill">${p.stats.DEF}</span></td>
+          <td style="text-align: center;"><span class="num-pill">${p.stats.MID}</span></td>
+          <td style="text-align: center;"><span class="num-pill">${p.stats.FWD}</span></td>
         </tr>
       `).join('');
     }
@@ -1088,6 +1069,7 @@
       }
     }
 
+    // Initialize UI
     document.getElementById('numGK').value = formation.GK;
     document.getElementById('numDEF').value = formation.DEF;
     document.getElementById('numMID').value = formation.MID;
