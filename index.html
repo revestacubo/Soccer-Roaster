@@ -1,1 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Fair Play Soccer Manager</title>
+  <style>
+    :root {
+      --primary: #1b5e20;
+      --pitch-green: #2e7d32;
+      --pitch-line: rgba(255, 255, 255, 0.65);
+      --accent: #0277bd;
+      --danger: #c62828;
+      --warning: #ef6c00;
+      --bg: #f4f6f8;
+      --card-bg: #ffffff;
+      --text: #212121;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 12px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    h1, h2, h3 { margin: 0 0 10px 0; }
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      background: #e0e0e0;
+      padding: 4px;
+      border-radius: 10px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 15px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: #555;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: white;
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 14px;
+    }
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card-bg);
+      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      margin-bottom: 14px;
+    }
+    .timer-card {
+      background: linear-gradient(135deg, #2e7d32, #1b5e20);
+      color: white;
+      text-align: center;
+      padding: 16px;
+      border-radius: 14px;
+      margin-bottom: 14px;
+    }
+    .timer-display {
+      font-size: 52px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      margin: 4px 0;
+      letter-spacing: 1px;
+    }
+    .timer-controls {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .notify-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .calc-banner {
+      background: #e8f5e9;
+      border-left: 4px solid #2e7d32;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      touch-action: manipulation;
+    }
+    button:active { opacity: 0.8; transform: scale(0.98); }
+    button.secondary { background-color: #546e7a; }
+    button.warning { background-color: var(--warning); }
+    button.danger { background-color: var(--danger); }
+    button.huge {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 10px;
+    }
+    input, select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .formation-inputs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .formation-inputs div { text-align: center; font-size: 12px; font-weight: bold; }
+    .formation-inputs input { width: 100%; text-align: center; margin-top: 4px; }
+    .pitch-container {
+      position: relative;
+      background: #388e3c;
+      background-image: repeating-linear-gradient(
+        0deg,
+        #2e7d32,
+        #2e7d32 40px,
+        #388e3c 40px,
+        #388e3c 80px
+      );
+      border: 3px solid white;
+      border-radius: 10px;
+      padding: 16px 10px;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+    .pitch-container::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--pitch-line);
+      transform: translateY(-50%);
+    }
+    .pitch-container::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 80px;
+      height: 80px;
+      border: 2px solid var(--pitch-line);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .pitch-line-row {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      margin: 4px 0;
+    }
+    .pitch-player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 70px;
+    }
+    .pitch-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #ffffff;
+      color: #1b5e20;
+      font-weight: 800;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      border: 2px solid #1b5e20;
+    }
+    .pitch-name {
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 8px;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 75px;
+    }
+    .pitch-pos-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #ffd54f;
+      letter-spacing: 0.5px;
+      margin-top: 1px;
+    }
+    .gk-token .pitch-circle {
+      background: #ffeb3b;
+      color: #b71c1c;
+      border-color: #b71c1c;
+    }
+    .bench-card {
+      background: #fff3e0;
+      border: 2px dashed #ff9800;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 14px;
+    }
+    .bench-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #e65100;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .bench-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .bench-player-pill {
+      background: white;
+      border: 1px solid #ffcc80;
+      border-radius: 20px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .bench-number {
+      background: #e65100;
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+    .bench-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #333;
+    }
+    .action-banner {
+      background: #fff8e1;
+      border: 2px solid #ffe082;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .action-banner-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: #795548;
+    }
+    .subs-card {
+      background: #eef2f7;
+      border: 2px solid #90caf9;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .subs-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0d47a1;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .sub-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .sub-table th {
+      padding: 6px;
+      text-align: left;
+      font-size: 11px;
+      color: #455a64;
+      text-transform: uppercase;
+      border-bottom: 1px solid #cfd8dc;
+    }
+    .sub-table td {
+      padding: 7px 6px;
+      border-bottom: 1px solid #e0e0e0;
+      vertical-align: middle;
+    }
+    .sub-tag-in {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .sub-tag-out {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .styled-table th {
+      text-align: left;
+      font-size: 12px;
+      color: #666;
+      border-bottom: 2px solid #ddd;
+      padding: 6px 4px;
+    }
+    .styled-table td {
+      padding: 8px 4px;
+      border-bottom: 1px solid #f0f0f0;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+    .num-pill {
+      display: inline-block;
+      min-width: 26px;
+      text-align: center;
+      background: #e0e0e0;
+      color: #333;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 2px 5px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('gameTab')">⚽ Game Day</button>
+    <button class="tab-btn" onclick="switchTab('statsTab')">📊 Season Statistics</button>
+  </div>
 
+  <div id="gameTab" class="tab-content active">
+    <div class="timer-card">
+      <div style="font-size: 13px; letter-spacing: 0.5px; opacity: 0.9;">
+        MATCH ROTATION TIMER — <span id="shiftIndicator">SHIFT 1</span>
+      </div>
+      <div class="timer-display" id="timer">06:00</div>
+      <div class="timer-controls">
+        <button onclick="startTimer()" id="startBtn">▶ Start</button>
+        <button class="secondary" onclick="pauseTimer()">⏸ Pause</button>
+        <button class="secondary" onclick="resetTimer()">↺ Reset</button>
+        <button class="secondary" onclick="playWhistleSound()">🔊 Test Sound</button>
+      </div>
+      <div>
+        <button class="notify-btn" id="notifyBtn" onclick="requestNotificationPermission()">
+          ⌚ Enable Apple Watch Alerts
+        </button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div>
+        <div class="card">
+          <h3>1. Match & Fair-Time Setup</h3>
+          <label style="font-size: 13px; font-weight: bold;">Total Game Duration (Minutes):</label>
+          <select id="gameDurationSelect" onchange="calculateFairPlay()" style="width: 100%; margin-top: 4px; margin-bottom: 10px;">
+            <option value="20">20 minutes</option>
+            <option value="25">25 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="35">35 minutes</option>
+            <option value="40" selected>40 minutes</option>
+            <option value="45">45 minutes</option>
+            <option value="50">50 minutes</option>
+            <option value="55">55 minutes</option>
+            <option value="60">60 minutes</option>
+            <option value="70">70 minutes</option>
+            <option value="80">80 minutes</option>
+            <option value="90">90 minutes</option>
+          </select>
+
+          <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px;">Formation Slots on Field:</div>
+          <div class="formation-inputs">
+            <div>GK<input type="number" id="numGK" value="1" min="1" max="1" onchange="calculateFairPlay()" /></div>
+            <div>DEF<input type="number" id="numDEF" value="2" min="0" max="6" onchange="calculateFairPlay()" /></div>
+            <div>MID<input type="number" id="numMID" value="2" min="0" max="6" onchange="calculateFairPlay()" /></div>
+            <div>FWD<input type="number" id="numFWD" value="2" min="0" max="6" onchange="calculateFairPlay()" /></div>
+          </div>
+          <div class="calc-banner" id="calcOutput">Calculating fair rotation...</div>
+        </div>
+
+        <div class="card">
+          <h3>2. Today's Attendance</h3>
+          <p style="font-size: 12px; color: #666; margin-top: -6px;">Uncheck absent players before generating lineups.</p>
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th style="width: 34px; text-align: center;">Att</th>
+                <th style="width: 44px;">#</th>
+                <th>Player</th>
+                <th style="text-align: right;">Pitch Shifts</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTableBody"></tbody>
+          </table>
+          <button class="huge" style="margin-top: 14px;" onclick="generateLineup()">⚡ Generate Next Lineup</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="action-banner">
+          <div class="action-banner-text">Ready to make substitutions?</div>
+          <button class="warning" style="padding: 10px 18px; font-size: 15px;" onclick="confirmShiftAndAdvance()">
+            Rotate & Save Shift
+          </button>
+        </div>
+
+        <div class="subs-card">
+          <div class="subs-title">
+            <span>🔄 Substitution Callout (Who's Coming In & Out)</span>
+          </div>
+          <div id="subsContainer">
+            <p style="color: #666; font-size: 13px; margin: 4px 0;">Tap "Generate Next Lineup" to see player substitutions.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="margin-bottom: 12px;">
+            <h3>Active Field Lineup</h3>
+          </div>
+          <div class="pitch-container" id="pitch">
+            <div class="pitch-line-row" id="pitchFWD"></div>
+            <div class="pitch-line-row" id="pitchMID"></div>
+            <div class="pitch-line-row" id="pitchDEF"></div>
+            <div class="pitch-line-row" id="pitchGK"></div>
+          </div>
+          <div class="bench-card">
+            <div class="bench-title">
+              <span>🪑 Bench / Resting This Shift</span>
+              <span id="benchCount" style="font-size: 11px; opacity: 0.8;">(0 players)</span>
+            </div>
+            <div class="bench-grid" id="benchContainer">
+              <span style="font-size: 13px; color: #888;">No players on bench.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="statsTab" class="tab-content">
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <h3>Season Overview</h3>
+          <p style="font-size: 13px; color: #666; margin: 0;">Cumulative match time and position distribution.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="exportToCSV()">📥 Export to CSV</button>
+          <button class="danger" onclick="resetSeason()">Reset Season Data</button>
+        </div>
+      </div>
+      <div style="overflow-x: auto; margin-top: 14px;">
+        <table class="styled-table" style="min-width: 580px;">
+          <thead>
+            <tr>
+              <th style="width: 40px;">#</th>
+              <th>Player Name</th>
+              <th style="text-align: center;">Est. Pitch Mins</th>
+              <th style="text-align: center;">Pitch Shifts</th>
+              <th style="text-align: center;">Bench</th>
+              <th style="text-align: center;">GK</th>
+              <th style="text-align: center;">DEF</th>
+              <th style="text-align: center;">MID</th>
+              <th style="text-align: center;">FWD</th>
+            </tr>
+          </thead>
+          <tbody id="seasonStatsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Manage Squad Roster</h3>
+      <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+        <input type="number" id="newPlayerNumber" placeholder="#" style="width: 65px;" />
+        <input type="text" id="newPlayerName" placeholder="New player name..." style="flex: 1;" />
+        <button onclick="addPlayer()">+ Add to Squad</button>
+      </div>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th style="width: 44px;">#</th>
+            <th>Name</th>
+            <th style="text-align: right; width: 60px;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="manageRosterTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let audioCtx = null;
+    function playWhistleSound() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        [0, 0.25].forEach(offset => {
+          let osc = audioCtx.createOscillator();
+          let gain = audioCtx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(1800, audioCtx.currentTime + offset);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime + offset);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + offset + 0.18);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + offset);
+          osc.stop(audioCtx.currentTime + offset + 0.2);
+        });
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function requestNotificationPermission() {
+      if (!("Notification" in window)) {
+        alert("This browser does not support web push notifications.");
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        const btn = document.getElementById('notifyBtn');
+        if (permission === "granted") {
+          btn.innerText = "✓ Apple Watch Alerts Active";
+          btn.style.background = "rgba(76, 175, 80, 0.4)";
+          new Notification("Fair Play Soccer", {
+            body: "Notifications enabled! Alerts will vibrate your Apple Watch."
+          });
+        }
+      });
+    }
+
+    function sendWatchNotification(title, message) {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification(title, {
+          body: message,
+          icon: 'https://img.icons8.com/color/96/football2--v1.png',
+          vibrate: [300, 100, 300]
+        });
+      }
+    }
+
+    let wakeLock = null;
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (err) {}
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      if (tabId === 'gameTab') {
+        document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+        document.getElementById('gameTab').classList.add('active');
+      } else {
+        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        document.getElementById('statsTab').classList.add('active');
+        renderSeasonStats();
+        renderManageRoster();
+      }
+    }
+
+    let timerInterval = null;
+    let timerState = JSON.parse(localStorage.getItem('soccer_timer_v9')) || {
+      running: false,
+      remaining: 6 * 60,
+      totalDuration: 6 * 60,
+      lastTick: null,
+      shift: 1
+    };
+    let gameConfig = JSON.parse(localStorage.getItem('soccer_game_config_v9')) || {
+      gameDuration: 40,
+      shiftDuration: 6
+    };
+    let formation = JSON.parse(localStorage.getItem('soccer_formation_v9')) || { GK: 1, DEF: 2, MID: 2, FWD: 2 };
+    let currentAssignment = JSON.parse(localStorage.getItem('soccer_current_assignment_v9')) || { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
+    let previousAssignment = JSON.parse(localStorage.getItem('soccer_prev_assignment_v9')) || null;
+
+    let players = JSON.parse(localStorage.getItem('soccer_squad_v9')) || [
+      { id: 1, number: 7,  name: "Alex", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 2, number: 10, name: "Sam",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 3, number: 4,  name: "Liam", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 4, number: 9,  name: "Maya", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 5, number: 2,  name: "Noah", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 6, number: 8,  name: "Emma", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 7, number: 11, name: "Leo",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 8, number: 5,  name: "Zoe",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
+    ];
+
+    function saveAll() {
+      localStorage.setItem('soccer_squad_v9', JSON.stringify(players));
+      localStorage.setItem('soccer_timer_v9', JSON.stringify(timerState));
+      localStorage.setItem('soccer_current_assignment_v9', JSON.stringify(currentAssignment));
+      localStorage.setItem('soccer_prev_assignment_v9', JSON.stringify(previousAssignment));
+      localStorage.setItem('soccer_formation_v9', JSON.stringify(formation));
+      localStorage.setItem('soccer_game_config_v9', JSON.stringify(gameConfig));
+    }
+
+    function calculateFairPlay() {
+      formation.GK = parseInt(document.getElementById('numGK').value) || 0;
+      formation.DEF = parseInt(document.getElementById('numDEF').value) || 0;
+      formation.MID = parseInt(document.getElementById('numMID').value) || 0;
+      formation.FWD = parseInt(document.getElementById('numFWD').value) || 0;
+      
+      const gameMins = parseInt(document.getElementById('gameDurationSelect').value) || 40;
+      gameConfig.gameDuration = gameMins;
+
+      const fieldSpots = formation.GK + formation.DEF + formation.MID + formation.FWD;
+      const attending = players.filter(p => p.present).length;
+      const banner = document.getElementById('calcOutput');
+
+      if (attending === 0 || fieldSpots === 0) {
+        banner.innerHTML = "Check attendance and field spots.";
+        return;
+      }
+
+      if (attending <= fieldSpots) {
+        gameConfig.shiftDuration = gameMins;
+        banner.innerHTML = `<b>No bench needed!</b> ${attending} players for ${fieldSpots} field slots.<br>Everyone plays all <b>${gameMins} minutes</b>.`;
+      } else {
+        const totalPlayerMinutes = gameMins * fieldSpots;
+        const fairTimePerPlayer = (totalPlayerMinutes / attending).toFixed(1);
+        let bestShifts = Math.round(gameMins / 6);
+        if (bestShifts < 4) bestShifts = 4;
+        let shiftMinutes = (gameMins / bestShifts).toFixed(1);
+        gameConfig.shiftDuration = parseFloat(shiftMinutes);
+
+        banner.innerHTML = `👥 <b>${attending} present</b> | <b>${fieldSpots} field slots</b>.<br>⏱ Target: <b>${fairTimePerPlayer} mins</b> per player.<br>🔄 <b>${bestShifts} rotations</b> of <b>~${shiftMinutes} min</b> each.`;
+
+        if (!timerState.running) {
+          timerState.totalDuration = Math.round(parseFloat(shiftMinutes) * 60);
+          timerState.remaining = timerState.totalDuration;
+          updateTimerDisplay();
+        }
+      }
+      saveAll();
+    }
+
+    function initTimerFromStorage() {
+      if (timerState.running && timerState.lastTick) {
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - timerState.lastTick) / 1000);
+        timerState.remaining = Math.max(0, timerState.remaining - elapsedSeconds);
+        timerState.lastTick = now;
+      }
+      updateTimerDisplay();
+      document.getElementById('shiftIndicator').innerText = `SHIFT ${timerState.shift}`;
+      document.getElementById('gameDurationSelect').value = gameConfig.gameDuration;
+
+      if ("Notification" in window && Notification.permission === "granted") {
+        const btn = document.getElementById('notifyBtn');
+        btn.innerText = "✓ Apple Watch Alerts Active";
+        btn.style.background = "rgba(76, 175, 80, 0.4)";
+      }
+
+      if (timerState.running && timerState.remaining > 0) {
+        startTimerLoop();
+      } else if (timerState.running && timerState.remaining === 0) {
+        timerState.running = false;
+        saveAll();
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timerState.remaining / 60);
+      const secs = timerState.remaining % 60;
+      document.getElementById('timer').innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function startTimerLoop() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        const now = Date.now();
+        const delta = Math.floor((now - (timerState.lastTick || now)) / 1000);
+        if (delta >= 1) {
+          timerState.remaining = Math.max(0, timerState.remaining - delta);
+          timerState.lastTick = now;
+          saveAll();
+          updateTimerDisplay();
+
+          if (timerState.remaining === 0) {
+            pauseTimer();
+            playWhistleSound();
+            sendWatchNotification("⏰ Shift Ended!", "Time to rotate players on the field.");
+            alert("⏰ Shift completed! Time for substitutions.");
+          }
+        }
+      }, 500);
+    }
+
+    function startTimer() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      requestWakeLock();
+      timerState.running = true;
+      timerState.lastTick = Date.now();
+      saveAll();
+      startTimerLoop();
+    }
+
+    function pauseTimer() {
+      timerState.running = false;
+      timerState.lastTick = null;
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+      saveAll();
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      timerState.remaining = timerState.totalDuration;
+      saveAll();
+      updateTimerDisplay();
+    }
+
+    function addPlayer() {
+      const nameInput = document.getElementById('newPlayerName');
+      const numInput = document.getElementById('newPlayerNumber');
+      const name = nameInput.value.trim();
+      const number = numInput.value.trim() || '?';
+      if (!name) return;
+
+      players.push({
+        id: Date.now(),
+        number: number,
+        name: name,
+        present: true,
+        stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 }
+      });
+
+      nameInput.value = '';
+      numInput.value = '';
+      saveAll();
+      renderAttendanceTable();
+      renderSeasonStats();
+      renderManageRoster();
+      calculateFairPlay();
+    }
+
+    function toggleAttendance(id) {
+      const p = players.find(x => x.id === id);
+      if (p) p.present = !p.present;
+      saveAll();
+      renderAttendanceTable();
+      calculateFairPlay();
+    }
+
+    function deletePlayer(id) {
+      if (confirm("Remove this player from squad?")) {
+        players = players.filter(x => x.id !== id);
+        saveAll();
+        renderAttendanceTable();
+        renderSeasonStats();
+        renderManageRoster();
+        calculateFairPlay();
+      }
+    }
+
+    function renderAttendanceTable() {
+      const tbody = document.getElementById('attendanceTableBody');
+      tbody.innerHTML = players.map(p => `
+        <tr>
+          <td style="text-align: center;">
+            <input type="checkbox" style="transform: scale(1.2);" ${p.present ? 'checked' : ''} onchange="toggleAttendance(${p.id})">
+          </td>
+          <td><span class="num-pill">#${p.number}</span></td>
+          <td>
+            <span style="font-weight: 600; ${!p.present ? 'color:#aaa; text-decoration:line-through' : ''}">
+              ${p.name}
+            </span>
+          </td>
+          <td style="text-align: right; font-weight: bold; font-size: 13px;">${p.stats.totalPlayed}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderManageRoster() {
+      const tbody = document.getElementById('manageRosterTableBody');
+      tbody.innerHTML = players.map(p => `
+        <tr>
+          <td><span class="num-pill">#${p.number}</span></td>
+          <td style="font-weight: 600;">${p.name}</td>
+          <td style="text-align: right;">
+            <button class="danger" style="padding: 2px 8px; font-size: 11px;" onclick="deletePlayer(${p.id})">✕ Remove</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderSeasonStats() {
+      const tbody = document.getElementById('seasonStatsTableBody');
+      tbody.innerHTML = players.map(p => `
+        <tr>
+          <td><span class="num-pill">#${p.number}</span></td>
+          <td style="font-weight: 700;">${p.name}</td>
+          <td style="text-align: center; font-weight: bold; color: var(--primary);">${p.stats.totalMinutes || (p.stats.totalPlayed * (gameConfig.shiftDuration || 6)).toFixed(0)}m</td>
+          <td style="text-align: center; font-weight: bold;">${p.stats.totalPlayed}</td>
+          <td style="text-align: center; color: #666;">${p.stats.BENCH}</td>
+          <td style="text-align: center;"><span class="num-pill pos-GK">${p.stats.GK}</span></td>
+          <td style="text-align: center;"><span class="num-pill pos-DEF">${p.stats.DEF}</span></td>
+          <td style="text-align: center;"><span class="num-pill pos-MID">${p.stats.MID}</span></td>
+          <td style="text-align: center;"><span class="num-pill pos-FWD">${p.stats.FWD}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    function generateLineup() {
+      const available = players.filter(p => p.present);
+      if (available.length === 0) {
+        alert("Mark players as attending before generating lineup!");
+        return;
+      }
+      const hasPrev = Object.values(currentAssignment).some(arr => arr && arr.length > 0);
+      if (hasPrev) {
+        previousAssignment = JSON.parse(JSON.stringify(currentAssignment));
+      }
+
+      const totalSlots = formation.GK + formation.DEF + formation.MID + formation.FWD;
+      let pool = [...available].sort((a, b) => {
+        let diff = a.stats.totalPlayed - b.stats.totalPlayed;
+        return diff !== 0 ? diff : (Math.random() - 0.5);
+      });
+
+      const onField = pool.slice(0, totalSlots);
+      const onBench = pool.slice(totalSlots);
+      currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: onBench };
+
+      let slots = [];
+      for (let i = 0; i < formation.GK; i++) slots.push('GK');
+      for (let i = 0; i < formation.DEF; i++) slots.push('DEF');
+      for (let i = 0; i < formation.MID; i++) slots.push('MID');
+      for (let i = 0; i < formation.FWD; i++) slots.push('FWD');
+
+      let unassigned = [...onField];
+      if (slots.includes('GK')) {
+        unassigned.sort((a, b) => a.stats.GK - b.stats.GK || (Math.random() - 0.5));
+        let gk = unassigned.shift();
+        currentAssignment.GK.push(gk);
+        slots.splice(slots.indexOf('GK'), 1);
+      }
+
+      slots.forEach(pos => {
+        unassigned.sort((a, b) => a.stats[pos] - b.stats[pos] || (Math.random() - 0.5));
+        let p = unassigned.shift();
+        currentAssignment[pos].push(p);
+      });
+
+      saveAll();
+      renderPitch();
+      renderSubstitutionCallout();
+    }
+
+    function renderSubstitutionCallout() {
+      const container = document.getElementById('subsContainer');
+      if (!previousAssignment) {
+        container.innerHTML = `
+          <div style="background: white; padding: 8px; border-radius: 6px; font-size: 13px;">
+            <b>Starting Lineup:</b> All on-field players enter the pitch.
+          </div>
+        `;
+        return;
+      }
+
+      const prevField = [
+        ...(previousAssignment.GK || []),
+        ...(previousAssignment.DEF || []),
+        ...(previousAssignment.MID || []),
+        ...(previousAssignment.FWD || [])
+      ];
+
+      const currentField = [
+        ...(currentAssignment.GK || []).map(p => ({ ...p, assignedPos: 'GK' })),
+        ...(currentAssignment.DEF || []).map(p => ({ ...p, assignedPos: 'DEF' })),
+        ...(currentAssignment.MID || []).map(p => ({ ...p, assignedPos: 'MID' })),
+        ...(currentAssignment.FWD || []).map(p => ({ ...p, assignedPos: 'FWD' }))
+      ];
+
+      const goingOut = prevField.filter(prevP => !currentField.some(currP => currP.id === prevP.id));
+      const comingIn = currentField.filter(currP => !prevField.some(prevP => prevP.id === currP.id));
+
+      if (goingOut.length === 0 && comingIn.length === 0) {
+        container.innerHTML = `
+          <div style="background: white; padding: 8px; border-radius: 6px; font-size: 13px; color: #555;">
+            No substitutions this shift (all players stay in current status).
+          </div>
+        `;
+        return;
+      }
+
+      const maxRows = Math.max(goingOut.length, comingIn.length);
+      let rowsHtml = '';
+      for (let i = 0; i < maxRows; i++) {
+        const inPlayer = comingIn[i];
+        const outPlayer = goingOut[i];
+        rowsHtml += `
+          <tr>
+            <td>
+              ${inPlayer ? `<span class="sub-tag-in">🟢 IN</span> <b>#${inPlayer.number}</b> ${inPlayer.name} <small style="color: #555;">(${inPlayer.assignedPos})</small>` : `<span style="color:#aaa;">—</span>`}
+            </td>
+            <td style="text-align: center; color: #999; font-weight: bold;">➔</td>
+            <td>
+              ${outPlayer ? `<span class="sub-tag-out">🔴 OUT</span> <b>#${outPlayer.number}</b> ${outPlayer.name} <small style="color: #666;">(to Bench)</small>` : `<span style="color:#aaa;">—</span>`}
+            </td>
+          </tr>
+        `;
+      }
+      container.innerHTML = `
+        <table class="sub-table">
+          <thead>
+            <tr>
+              <th style="width: 48%;">Entering Pitch (IN)</th>
+              <th style="width: 4%;"></th>
+              <th style="width: 48%;">Heading to Bench (OUT)</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `;
+    }
+
+    function renderPitch() {
+      const renderRow = (containerId, playerList, posLabel, isGk = false) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = (playerList || []).map(p => `
+          <div class="pitch-player ${isGk ? 'gk-token' : ''}">
+            <div class="pitch-circle">#${p.number}</div>
+            <div class="pitch-name">${p.name}</div>
+            <div class="pitch-pos-label">${posLabel}</div>
+          </div>
+        `).join('');
+      };
+
+      renderRow('pitchFWD', currentAssignment.FWD, 'FWD');
+      renderRow('pitchMID', currentAssignment.MID, 'MID');
+      renderRow('pitchDEF', currentAssignment.DEF, 'DEF');
+      renderRow('pitchGK', currentAssignment.GK, 'GK', true);
+
+      const benchContainer = document.getElementById('benchContainer');
+      const benchCount = document.getElementById('benchCount');
+      const benchPlayers = currentAssignment.BENCH || [];
+      benchCount.innerText = `(${benchPlayers.length} resting)`;
+
+      if (benchPlayers.length === 0) {
+        benchContainer.innerHTML = `<span style="font-size: 13px; color: #888;">No players on bench.</span>`;
+      } else {
+        benchContainer.innerHTML = benchPlayers.map(p => `
+          <div class="bench-player-pill">
+            <span class="bench-number">#${p.number}</span>
+            <span class="bench-name">${p.name}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    function confirmShiftAndAdvance() {
+      const hasFieldPlayers = ['GK', 'DEF', 'MID', 'FWD'].some(pos => currentAssignment[pos]?.length > 0);
+      if (!hasFieldPlayers) {
+        alert("Generate a lineup before advancing!");
+        return;
+      }
+      const shiftMins = parseFloat(gameConfig.shiftDuration) || 6;
+      ['GK', 'DEF', 'MID', 'FWD'].forEach(pos => {
+        (currentAssignment[pos] || []).forEach(assigned => {
+          let p = players.find(x => x.id === assigned.id);
+          if (p) {
+            p.stats[pos]++;
+            p.stats.totalPlayed++;
+            p.stats.totalMinutes = (p.stats.totalMinutes || 0) + Math.round(shiftMins);
+          }
+        });
+      });
+
+      (currentAssignment.BENCH || []).forEach(assigned => {
+        let p = players.find(x => x.id === assigned.id);
+        if (p) p.stats.BENCH++;
+      });
+
+      timerState.shift++;
+      document.getElementById('shiftIndicator').innerText = `SHIFT ${timerState.shift}`;
+      resetTimer();
+      saveAll();
+      renderAttendanceTable();
+      generateLineup();
+    }
+
+    function exportToCSV() {
+      let csv = "Number,Name,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD\n";
+      players.forEach(p => {
+        const estMins = p.stats.totalMinutes || (p.stats.totalPlayed * (gameConfig.shiftDuration || 6)).toFixed(0);
+        csv += `"${p.number}","${p.name}",${estMins},${p.stats.totalPlayed},${p.stats.BENCH},${p.stats.GK},${p.stats.DEF},${p.stats.MID},${p.stats.FWD}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `soccer_season_stats_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function resetSeason() {
+      if (confirm("Reset ALL player stats and shift counts to zero?")) {
+        players.forEach(p => {
+          p.stats = { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 };
+        });
+        timerState.shift = 1;
+        document.getElementById('shiftIndicator').innerText = `SHIFT 1`;
+        currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
+        previousAssignment = null;
+        resetTimer();
+        saveAll();
+        renderAttendanceTable();
+        renderSeasonStats();
+        renderPitch();
+        renderSubstitutionCallout();
+      }
+    }
+
+    document.getElementById('numGK').value = formation.GK;
+    document.getElementById('numDEF').value = formation.DEF;
+    document.getElementById('numMID').value = formation.MID;
+    document.getElementById('numFWD').value = formation.FWD;
+
+    initTimerFromStorage();
+    renderAttendanceTable();
+    renderPitch();
+    renderSubstitutionCallout();
+    calculateFairPlay();
+  </script>
+</body>
+</html>
