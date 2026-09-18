@@ -541,6 +541,9 @@
     <button class="alarm-ack-btn" onclick="acknowledgeAlarm()">🛑 Acknowledge & Stop Alarm</button>
   </div>
 
+  <!-- HIDDEN FILE INPUT FOR IMPORTING CSV -->
+  <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
+
   <!-- ==================== TAB 1: GAME DAY ==================== -->
   <div id="gameTab" class="tab-content active">
     <div class="timer-card">
@@ -565,7 +568,7 @@
     </div>
 
     <div class="container">
-      <!-- Left: Match Attendance & Manual Trigger -->
+      <!-- Left: Match Attendance & Lineup Generation -->
       <div>
         <div class="card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -648,8 +651,9 @@
           <h3>Team Record & Season Overview</h3>
           <p style="font-size: 13px; color: #666; margin: 0;">Cumulative matches, goals, playing time, and position balance.</p>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <button onclick="exportToCSV()">📥 Export to CSV</button>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button onclick="exportToCSV(false)">📥 Export CSV</button>
+          <button class="secondary" onclick="triggerCSVImport()">📤 Import CSV</button>
           <button class="danger" onclick="resetSeason()">Reset Season Data</button>
         </div>
       </div>
@@ -733,6 +737,16 @@
         <div>FWD<input type="number" id="numFWD" value="2" min="0" max="6" onchange="calculateFairPlay()" /></div>
       </div>
       <div class="calc-banner" id="calcOutput">Calculating fair rotation...</div>
+    </div>
+
+    <!-- Data Import / Export Quick Bar -->
+    <div class="card">
+      <h3>Data Backup & Restore</h3>
+      <p style="font-size: 12px; color: #666; margin-top: -6px;">Export your complete season to CSV or restore from an existing file.</p>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="exportToCSV(false)" style="flex: 1;">📥 Export CSV Backup</button>
+        <button class="secondary" onclick="triggerCSVImport()" style="flex: 1;">📤 Import CSV File</button>
+      </div>
     </div>
 
     <div class="card">
@@ -819,7 +833,7 @@
       }
     }
 
-    let appSettings = safeLoad('soccer_settings_v17', {
+    let appSettings = safeLoad('soccer_settings_v18', {
       soundType: 'whistle',
       continuousAlarm: false,
       volume: 0.7
@@ -832,7 +846,7 @@
       appSettings.continuousAlarm = document.getElementById('continuousAlarmToggle').checked;
       appSettings.volume = parseFloat(document.getElementById('volumeSlider').value);
       document.getElementById('volumeLabel').innerText = `${Math.round(appSettings.volume * 100)}%`;
-      localStorage.setItem('soccer_settings_v17', JSON.stringify(appSettings));
+      localStorage.setItem('soccer_settings_v18', JSON.stringify(appSettings));
     }
 
     function initSettingsUI() {
@@ -1003,7 +1017,7 @@
     }
 
     let timerInterval = null;
-    let timerState = safeLoad('soccer_timer_v17', {
+    let timerState = safeLoad('soccer_timer_v18', {
       running: false,
       remaining: 6 * 60,
       totalDuration: 6 * 60,
@@ -1012,15 +1026,15 @@
       rotationsCompleted: 0,
       matchActive: false
     });
-    let gameConfig = safeLoad('soccer_game_config_v17', {
+    let gameConfig = safeLoad('soccer_game_config_v18', {
       gameDuration: 40,
       shiftDuration: 6,
       suggestedShifts: 6
     });
-    let matchHistory = safeLoad('soccer_match_history_v17', []);
-    let formation = safeLoad('soccer_formation_v17', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
-    let currentAssignment = safeLoad('soccer_current_assignment_v17', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
-    let previousAssignment = safeLoad('soccer_prev_assignment_v17', null);
+    let matchHistory = safeLoad('soccer_match_history_v18', []);
+    let formation = safeLoad('soccer_formation_v18', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
+    let currentAssignment = safeLoad('soccer_current_assignment_v18', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
+    let previousAssignment = safeLoad('soccer_prev_assignment_v18', null);
 
     let defaultPlayers = [
       { id: 1, number: 7,  name: "Alex", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
@@ -1032,7 +1046,7 @@
       { id: 7, number: 11, name: "Leo",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
       { id: 8, number: 5,  name: "Zoe",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
     ];
-    let players = safeLoad('soccer_squad_v17', defaultPlayers);
+    let players = safeLoad('soccer_squad_v18', defaultPlayers);
 
     players.forEach(p => { 
       if (typeof p.goals !== 'number') p.goals = 0; 
@@ -1041,13 +1055,13 @@
 
     function saveAll() {
       try {
-        localStorage.setItem('soccer_squad_v17', JSON.stringify(players));
-        localStorage.setItem('soccer_timer_v17', JSON.stringify(timerState));
-        localStorage.setItem('soccer_current_assignment_v17', JSON.stringify(currentAssignment));
-        localStorage.setItem('soccer_prev_assignment_v17', JSON.stringify(previousAssignment));
-        localStorage.setItem('soccer_formation_v17', JSON.stringify(formation));
-        localStorage.setItem('soccer_game_config_v17', JSON.stringify(gameConfig));
-        localStorage.setItem('soccer_match_history_v17', JSON.stringify(matchHistory));
+        localStorage.setItem('soccer_squad_v18', JSON.stringify(players));
+        localStorage.setItem('soccer_timer_v18', JSON.stringify(timerState));
+        localStorage.setItem('soccer_current_assignment_v18', JSON.stringify(currentAssignment));
+        localStorage.setItem('soccer_prev_assignment_v18', JSON.stringify(previousAssignment));
+        localStorage.setItem('soccer_formation_v18', JSON.stringify(formation));
+        localStorage.setItem('soccer_game_config_v18', JSON.stringify(gameConfig));
+        localStorage.setItem('soccer_match_history_v18', JSON.stringify(matchHistory));
       } catch (e) {}
     }
 
@@ -1665,20 +1679,24 @@
         updateScoreboard();
         updateGenerateButtonState();
 
-        alert(`Match recorded! Result: ${result} (${totalTeamGoals} - ${oppGoals}). Stats saved to Season Record.`);
+        // AUTOMATICALLY EXPORT THE COMPLETE CSV BACKUP
+        exportToCSV(true);
+
+        alert(`Match recorded! Result: ${result} (${totalTeamGoals} - ${oppGoals}).\nStats saved and CSV backup downloaded.`);
         switchTab('statsTab');
       } else {
         generateLineupInternal();
       }
     }
 
-    function exportToCSV() {
+    // CSV EXPORT ENGINE
+    function exportToCSV(isAuto = false) {
       let csv = "Number,Name,Season Goals,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD\n";
       players.forEach(p => {
         const estMins = p.stats.totalMinutes || (p.stats.totalPlayed * (gameConfig.shiftDuration || 6)).toFixed(0);
         csv += `"${p.number}","${p.name}",${p.goals || 0},${estMins},${p.stats.totalPlayed},${p.stats.BENCH},${p.stats.GK},${p.stats.DEF},${p.stats.MID},${p.stats.FWD}\n`;
       });
-      csv += "\nMatch History\nDate,Result,Team Goals,Opponent Goals,Opponent Name\n";
+      csv += "\n[MATCH_HISTORY]\nDate,Result,Team Goals,Opponent Goals,Opponent Name\n";
       matchHistory.forEach(m => {
         csv += `"${m.date}","${m.result}",${m.ourGoals},${m.oppGoals},"${m.opponent}"\n`;
       });
@@ -1687,10 +1705,160 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", `soccer_season_stats_${new Date().toISOString().slice(0,10)}.csv`);
+      const filenameSuffix = isAuto ? "match_end" : "manual";
+      link.setAttribute("download", `soccer_season_stats_${new Date().toISOString().slice(0,10)}_${filenameSuffix}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    // CSV IMPORT ENGINE
+    function triggerCSVImport() {
+      document.getElementById('csvFileInput').value = "";
+      document.getElementById('csvFileInput').click();
+    }
+
+    function handleCSVFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        parseAndApplyCSV(e.target.result);
+      };
+      reader.readAsText(file);
+    }
+
+    function parseCSVLine(line) {
+      const result = [];
+      let cur = '';
+      let insideQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          if (insideQuotes && line[i + 1] === '"') {
+            cur += '"';
+            i++;
+          } else {
+            insideQuotes = !insideQuotes;
+          }
+        } else if (char === ',' && !insideQuotes) {
+          result.push(cur.trim());
+          cur = '';
+        } else {
+          cur += char;
+        }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+
+    function parseAndApplyCSV(csvText) {
+      try {
+        const rawLines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        if (rawLines.length < 2) {
+          alert("Invalid or empty CSV file.");
+          return;
+        }
+
+        const newPlayers = [];
+        const newMatchHistory = [];
+        let inMatchHistorySection = false;
+
+        for (let i = 0; i < rawLines.length; i++) {
+          const line = rawLines[i];
+
+          if (line === "[MATCH_HISTORY]" || line.startsWith("Date,Result,Team Goals")) {
+            inMatchHistorySection = true;
+            continue;
+          }
+          if (line.startsWith("Number,Name,Season Goals")) {
+            inMatchHistorySection = false;
+            continue;
+          }
+
+          const cols = parseCSVLine(line);
+
+          if (!inMatchHistorySection) {
+            // Player line format: Number,Name,Season Goals,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD
+            if (cols.length >= 10 && cols[0] !== "Number") {
+              const number = cols[0];
+              const name = cols[1];
+              const goals = parseInt(cols[2]) || 0;
+              const mins = parseInt(cols[3]) || 0;
+              const shifts = parseInt(cols[4]) || 0;
+              const bench = parseInt(cols[5]) || 0;
+              const gk = parseInt(cols[6]) || 0;
+              const def = parseInt(cols[7]) || 0;
+              const mid = parseInt(cols[8]) || 0;
+              const fwd = parseInt(cols[9]) || 0;
+
+              newPlayers.push({
+                id: Date.now() + i,
+                number: number,
+                name: name,
+                present: true,
+                goals: goals,
+                matchGoals: 0,
+                stats: {
+                  GK: gk,
+                  DEF: def,
+                  MID: mid,
+                  FWD: fwd,
+                  BENCH: bench,
+                  totalPlayed: shifts,
+                  totalMinutes: mins
+                }
+              });
+            }
+          } else {
+            // Match line format: Date,Result,Team Goals,Opponent Goals,Opponent Name
+            if (cols.length >= 5 && cols[0] !== "Date") {
+              newMatchHistory.push({
+                id: Date.now() + i,
+                date: cols[0],
+                result: cols[1],
+                ourGoals: parseInt(cols[2]) || 0,
+                oppGoals: parseInt(cols[3]) || 0,
+                opponent: cols[4] || "Opponent"
+              });
+            }
+          }
+        }
+
+        if (newPlayers.length === 0 && newMatchHistory.length === 0) {
+          alert("Could not detect player or match data in the selected CSV.");
+          return;
+        }
+
+        if (confirm(`Successfully recognized ${newPlayers.length} players and ${newMatchHistory.length} matches from CSV.\n\nDo you want to overwrite current season data with this file?`)) {
+          if (newPlayers.length > 0) {
+            players = newPlayers;
+          }
+          matchHistory = newMatchHistory;
+
+          timerState.shift = 1;
+          timerState.rotationsCompleted = 0;
+          timerState.matchActive = false;
+          currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
+          previousAssignment = null;
+
+          saveAll();
+          renderAttendanceTable();
+          renderSeasonStats();
+          renderManageRoster();
+          renderPitch();
+          renderSubstitutionCallout();
+          updateScoreboard();
+          updateRotationDisplay();
+          updateGenerateButtonState();
+
+          alert("✓ Season data and squad roster successfully imported!");
+          switchTab('statsTab');
+        }
+      } catch (err) {
+        alert("Error importing CSV file: " + err.message);
+      }
     }
 
     function resetSeason() {
