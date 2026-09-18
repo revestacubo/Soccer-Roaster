@@ -12,6 +12,7 @@
       --pitch-line: rgba(255, 255, 255, 0.65);
       --warning: #ef6c00;
       --danger: #c62828;
+      --accent: #0277bd;
       --bg: #f4f6f8;
       --card-bg: #ffffff;
       --text: #212121;
@@ -142,6 +143,8 @@
     }
     .formation-inputs div { text-align: center; font-size: 12px; font-weight: bold; }
     .formation-inputs input { width: 100%; text-align: center; margin-top: 4px; }
+    
+    /* Pitch Container & Player Tokens */
     .pitch-container {
       position: relative;
       background: #388e3c;
@@ -149,7 +152,7 @@
       border: 3px solid white;
       border-radius: 10px;
       padding: 16px 10px;
-      min-height: 400px;
+      min-height: 420px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -190,7 +193,7 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      width: 70px;
+      width: 80px;
     }
     .pitch-circle {
       width: 38px;
@@ -205,6 +208,20 @@
       justify-content: center;
       box-shadow: 0 3px 6px rgba(0,0,0,0.3);
       border: 2px solid #1b5e20;
+      position: relative;
+    }
+    .goal-bubble {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      background: #ffd600;
+      color: #212121;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 10px;
+      border: 1px solid #ffab00;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
     .pitch-name {
       background: rgba(0, 0, 0, 0.75);
@@ -217,7 +234,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 75px;
+      max-width: 78px;
     }
     .pitch-pos-label {
       font-size: 9px;
@@ -227,11 +244,38 @@
       letter-spacing: 0.5px;
       margin-top: 1px;
     }
+    .pitch-goal-btn {
+      background: rgba(255, 255, 255, 0.9);
+      color: #212121;
+      border: 1px solid #ccc;
+      padding: 2px 5px;
+      font-size: 10px;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-top: 3px;
+      cursor: pointer;
+    }
     .gk-token .pitch-circle {
       background: #ffeb3b;
       color: #b71c1c;
       border-color: #b71c1c;
     }
+
+    /* Scoreboard Banner */
+    .scoreboard-banner {
+      background: #212121;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    /* Bench */
     .bench-card {
       background: #fff3e0;
       border: 2px dashed #ff9800;
@@ -277,6 +321,8 @@
       font-weight: 700;
       color: #333;
     }
+
+    /* Quick Rotate Action Bar */
     .action-banner {
       background: #fff8e1;
       border: 2px solid #ffe082;
@@ -292,6 +338,8 @@
       font-weight: 700;
       color: #795548;
     }
+
+    /* Subs Card */
     .subs-card {
       background: #eef2f7;
       border: 2px solid #90caf9;
@@ -339,6 +387,8 @@
       padding: 2px 6px;
       border-radius: 6px;
     }
+
+    /* Tables */
     .styled-table {
       width: 100%;
       border-collapse: collapse;
@@ -352,10 +402,34 @@
       padding: 6px 4px;
     }
     .styled-table td {
-      padding: 8px 4px;
+      padding: 6px 3px;
       border-bottom: 1px solid #f0f0f0;
       vertical-align: middle;
       font-size: 14px;
+    }
+    .editable-num {
+      width: 44px;
+      padding: 4px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 13px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .editable-name {
+      width: 95%;
+      padding: 4px 6px;
+      font-weight: 600;
+      font-size: 14px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      background: #fff;
+    }
+    .editable-num:focus, .editable-name:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #e8f5e9;
     }
     .num-pill {
       display: inline-block;
@@ -368,6 +442,21 @@
       padding: 2px 5px;
       border-radius: 12px;
     }
+    .add-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .goal-stepper {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .btn-goal-mini {
+      padding: 2px 5px;
+      font-size: 11px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
@@ -376,6 +465,7 @@
     <button class="tab-btn" onclick="switchTab('statsTab')">📊 Season Statistics</button>
   </div>
 
+  <!-- TAB 1: GAME DAY -->
   <div id="gameTab" class="tab-content active">
     <div class="timer-card">
       <div style="font-size: 13px; letter-spacing: 0.5px; opacity: 0.9;">
@@ -426,15 +516,24 @@
         </div>
 
         <div class="card">
-          <h3>2. Today's Attendance</h3>
-          <p style="font-size: 12px; color: #666; margin-top: -6px;">Uncheck absent players before generating lineups.</p>
+          <h3>2. Squad & Attendance</h3>
+          <p style="font-size: 12px; color: #666; margin-top: -6px;">Tap any name/# to edit. Tap ⚽ to add a goal.</p>
+          
+          <div class="add-bar">
+            <input type="number" id="tab1NewNum" placeholder="#" style="width: 50px;" />
+            <input type="text" id="tab1NewName" placeholder="New player name..." style="flex: 1;" />
+            <button onclick="addPlayerFromTab('tab1NewNum', 'tab1NewName')">+ Add</button>
+          </div>
+
           <table class="styled-table">
             <thead>
               <tr>
-                <th style="width: 34px; text-align: center;">Att</th>
-                <th style="width: 44px;">#</th>
+                <th style="width: 28px; text-align: center;">Att</th>
+                <th style="width: 48px;">#</th>
                 <th>Player</th>
-                <th style="text-align: right;">Pitch Shifts</th>
+                <th style="width: 70px; text-align: center;">Goals</th>
+                <th style="width: 38px; text-align: center;">Shifts</th>
+                <th style="width: 26px;"></th>
               </tr>
             </thead>
             <tbody id="attendanceTableBody"></tbody>
@@ -459,6 +558,12 @@
         </div>
 
         <div class="card">
+          <!-- LIVE MATCH SCOREBOARD BANNER -->
+          <div class="scoreboard-banner">
+            <span>⚽ Team Match Goals</span>
+            <span id="matchTotalGoals" style="font-size: 18px; color: #ffd54f;">0 Goals</span>
+          </div>
+
           <div style="margin-bottom: 12px;">
             <h3>Active Field Lineup</h3>
           </div>
@@ -482,12 +587,13 @@
     </div>
   </div>
 
+  <!-- TAB 2: OVERALL SEASON STATS -->
   <div id="statsTab" class="tab-content">
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
         <div>
           <h3>Season Overview</h3>
-          <p style="font-size: 13px; color: #666; margin: 0;">Cumulative match time and position distribution.</p>
+          <p style="font-size: 13px; color: #666; margin: 0;">Cumulative match time, goals, and position distribution.</p>
         </div>
         <div style="display: flex; gap: 8px;">
           <button onclick="exportToCSV()">📥 Export to CSV</button>
@@ -495,11 +601,12 @@
         </div>
       </div>
       <div style="overflow-x: auto; margin-top: 14px;">
-        <table class="styled-table" style="min-width: 580px;">
+        <table class="styled-table" style="min-width: 620px;">
           <thead>
             <tr>
               <th style="width: 40px;">#</th>
               <th>Player Name</th>
+              <th style="text-align: center;">Goals ⚽</th>
               <th style="text-align: center;">Est. Pitch Mins</th>
               <th style="text-align: center;">Pitch Shifts</th>
               <th style="text-align: center;">Bench</th>
@@ -516,17 +623,18 @@
 
     <div class="card">
       <h3>Manage Squad Roster</h3>
-      <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-        <input type="number" id="newPlayerNumber" placeholder="#" style="width: 65px;" />
-        <input type="text" id="newPlayerName" placeholder="New player name..." style="flex: 1;" />
-        <button onclick="addPlayer()">+ Add to Squad</button>
+      <div class="add-bar">
+        <input type="number" id="tab2NewNum" placeholder="#" style="width: 55px;" />
+        <input type="text" id="tab2NewName" placeholder="New player name..." style="flex: 1;" />
+        <button onclick="addPlayerFromTab('tab2NewNum', 'tab2NewName')">+ Add to Squad</button>
       </div>
       <table class="styled-table">
         <thead>
           <tr>
-            <th style="width: 44px;">#</th>
+            <th style="width: 54px;">#</th>
             <th>Name</th>
-            <th style="text-align: right; width: 60px;">Action</th>
+            <th style="text-align: center; width: 80px;">Goals</th>
+            <th style="text-align: right; width: 70px;">Action</th>
           </tr>
         </thead>
         <tbody id="manageRosterTableBody"></tbody>
@@ -600,7 +708,6 @@
       }
     }
 
-    // Safe load helper
     function safeLoad(key, fallback) {
       try {
         const item = localStorage.getItem(key);
@@ -611,42 +718,64 @@
     }
 
     let timerInterval = null;
-    let timerState = safeLoad('soccer_timer_v10', {
+    let timerState = safeLoad('soccer_timer_v12', {
       running: false,
       remaining: 6 * 60,
       totalDuration: 6 * 60,
       lastTick: null,
       shift: 1
     });
-    let gameConfig = safeLoad('soccer_game_config_v10', {
+    let gameConfig = safeLoad('soccer_game_config_v12', {
       gameDuration: 40,
       shiftDuration: 6
     });
-    let formation = safeLoad('soccer_formation_v10', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
-    let currentAssignment = safeLoad('soccer_current_assignment_v10', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
-    let previousAssignment = safeLoad('soccer_prev_assignment_v10', null);
+    let formation = safeLoad('soccer_formation_v12', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
+    let currentAssignment = safeLoad('soccer_current_assignment_v12', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
+    let previousAssignment = safeLoad('soccer_prev_assignment_v12', null);
 
     let defaultPlayers = [
-      { id: 1, number: 7,  name: "Alex", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 2, number: 10, name: "Sam",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 3, number: 4,  name: "Liam", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 4, number: 9,  name: "Maya", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 5, number: 2,  name: "Noah", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 6, number: 8,  name: "Emma", present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 7, number: 11, name: "Leo",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 8, number: 5,  name: "Zoe",  present: true, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
+      { id: 1, number: 7,  name: "Alex", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 2, number: 10, name: "Sam",  present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 3, number: 4,  name: "Liam", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 4, number: 9,  name: "Maya", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 5, number: 2,  name: "Noah", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 6, number: 8,  name: "Emma", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 7, number: 11, name: "Leo",  present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 8, number: 5,  name: "Zoe",  present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
     ];
-    let players = safeLoad('soccer_squad_v10', defaultPlayers);
+    let players = safeLoad('soccer_squad_v12', defaultPlayers);
+
+    // Make sure each player has the goals field initialized
+    players.forEach(p => { if (typeof p.goals !== 'number') p.goals = 0; });
 
     function saveAll() {
       try {
-        localStorage.setItem('soccer_squad_v10', JSON.stringify(players));
-        localStorage.setItem('soccer_timer_v10', JSON.stringify(timerState));
-        localStorage.setItem('soccer_current_assignment_v10', JSON.stringify(currentAssignment));
-        localStorage.setItem('soccer_prev_assignment_v10', JSON.stringify(previousAssignment));
-        localStorage.setItem('soccer_formation_v10', JSON.stringify(formation));
-        localStorage.setItem('soccer_game_config_v10', JSON.stringify(gameConfig));
+        localStorage.setItem('soccer_squad_v12', JSON.stringify(players));
+        localStorage.setItem('soccer_timer_v12', JSON.stringify(timerState));
+        localStorage.setItem('soccer_current_assignment_v12', JSON.stringify(currentAssignment));
+        localStorage.setItem('soccer_prev_assignment_v12', JSON.stringify(previousAssignment));
+        localStorage.setItem('soccer_formation_v12', JSON.stringify(formation));
+        localStorage.setItem('soccer_game_config_v12', JSON.stringify(gameConfig));
       } catch (e) {}
+    }
+
+    // Goal Logging Functionality
+    function addGoal(id, delta = 1) {
+      const p = players.find(x => x.id === id);
+      if (p) {
+        p.goals = Math.max(0, (p.goals || 0) + delta);
+        saveAll();
+        renderAttendanceTable();
+        renderPitch();
+        renderSeasonStats();
+        updateScoreboard();
+      }
+    }
+
+    function updateScoreboard() {
+      const totalGoals = players.reduce((sum, p) => sum + (p.goals || 0), 0);
+      const scoreEl = document.getElementById('matchTotalGoals');
+      if (scoreEl) scoreEl.innerText = `${totalGoals} ${totalGoals === 1 ? 'Goal' : 'Goals'}`;
     }
 
     function calculateFairPlay() {
@@ -765,18 +894,23 @@
       updateTimerDisplay();
     }
 
-    function addPlayer() {
-      const nameInput = document.getElementById('newPlayerName');
-      const numInput = document.getElementById('newPlayerNumber');
+    // Unified Player Management
+    function addPlayerFromTab(numInputId, nameInputId) {
+      const nameInput = document.getElementById(nameInputId);
+      const numInput = document.getElementById(numInputId);
       const name = nameInput.value.trim();
       const number = numInput.value.trim() || '?';
-      if (!name) return;
+      if (!name) {
+        alert("Please enter a player name.");
+        return;
+      }
 
       players.push({
         id: Date.now(),
         number: number,
         name: name,
         present: true,
+        goals: 0,
         stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 }
       });
 
@@ -789,6 +923,21 @@
       calculateFairPlay();
     }
 
+    function updatePlayerField(id, field, value) {
+      const p = players.find(x => x.id === id);
+      if (p) {
+        p[field] = value.trim();
+        saveAll();
+        ['GK', 'DEF', 'MID', 'FWD', 'BENCH'].forEach(pos => {
+          (currentAssignment[pos] || []).forEach(cp => {
+            if (cp.id === id) cp[field] = p[field];
+          });
+        });
+        renderPitch();
+        renderSeasonStats();
+      }
+    }
+
     function toggleAttendance(id) {
       const p = players.find(x => x.id === id);
       if (p) p.present = !p.present;
@@ -798,13 +947,19 @@
     }
 
     function deletePlayer(id) {
-      if (confirm("Remove this player from squad?")) {
+      const p = players.find(x => x.id === id);
+      if (confirm(`Remove ${p ? p.name : 'this player'} from squad?`)) {
         players = players.filter(x => x.id !== id);
+        ['GK', 'DEF', 'MID', 'FWD', 'BENCH'].forEach(pos => {
+          currentAssignment[pos] = (currentAssignment[pos] || []).filter(cp => cp.id !== id);
+        });
         saveAll();
         renderAttendanceTable();
         renderSeasonStats();
         renderManageRoster();
+        renderPitch();
         calculateFairPlay();
+        updateScoreboard();
       }
     }
 
@@ -815,13 +970,23 @@
           <td style="text-align: center;">
             <input type="checkbox" style="transform: scale(1.2);" ${p.present ? 'checked' : ''} onchange="toggleAttendance(${p.id})">
           </td>
-          <td><span class="num-pill">#${p.number}</span></td>
           <td>
-            <span style="font-weight: 600; ${!p.present ? 'color:#aaa; text-decoration:line-through' : ''}">
-              ${p.name}
-            </span>
+            <input type="text" class="editable-num" value="${p.number}" onchange="updatePlayerField(${p.id}, 'number', this.value)">
           </td>
-          <td style="text-align: right; font-weight: bold; font-size: 13px;">${p.stats.totalPlayed}</td>
+          <td>
+            <input type="text" class="editable-name" value="${p.name}" onchange="updatePlayerField(${p.id}, 'name', this.value)">
+          </td>
+          <td style="text-align: center;">
+            <div class="goal-stepper">
+              <button class="secondary btn-goal-mini" onclick="addGoal(${p.id}, -1)">-</button>
+              <span style="font-weight: 800; min-width: 14px; text-align: center;">${p.goals || 0}</span>
+              <button class="warning btn-goal-mini" onclick="addGoal(${p.id}, 1)">⚽</button>
+            </div>
+          </td>
+          <td style="text-align: center; font-weight: bold; font-size: 13px;">${p.stats.totalPlayed}</td>
+          <td style="text-align: right;">
+            <button class="danger" style="padding: 2px 6px; font-size: 11px;" onclick="deletePlayer(${p.id})">✕</button>
+          </td>
         </tr>
       `).join('');
     }
@@ -830,8 +995,15 @@
       const tbody = document.getElementById('manageRosterTableBody');
       tbody.innerHTML = players.map(p => `
         <tr>
-          <td><span class="num-pill">#${p.number}</span></td>
-          <td style="font-weight: 600;">${p.name}</td>
+          <td>
+            <input type="text" class="editable-num" value="${p.number}" onchange="updatePlayerField(${p.id}, 'number', this.value)">
+          </td>
+          <td>
+            <input type="text" class="editable-name" value="${p.name}" onchange="updatePlayerField(${p.id}, 'name', this.value)">
+          </td>
+          <td style="text-align: center; font-weight: bold;">
+            ${p.goals || 0} ⚽
+          </td>
           <td style="text-align: right;">
             <button class="danger" style="padding: 2px 8px; font-size: 11px;" onclick="deletePlayer(${p.id})">✕ Remove</button>
           </td>
@@ -845,6 +1017,7 @@
         <tr>
           <td><span class="num-pill">#${p.number}</span></td>
           <td style="font-weight: 700;">${p.name}</td>
+          <td style="text-align: center; font-weight: 800; color: #d84315;">${p.goals || 0} ⚽</td>
           <td style="text-align: center; font-weight: bold; color: var(--primary);">${p.stats.totalMinutes || (p.stats.totalPlayed * (gameConfig.shiftDuration || 6)).toFixed(0)}m</td>
           <td style="text-align: center; font-weight: bold;">${p.stats.totalPlayed}</td>
           <td style="text-align: center; color: #666;">${p.stats.BENCH}</td>
@@ -951,7 +1124,7 @@
             </td>
             <td style="text-align: center; color: #999; font-weight: bold;">➔</td>
             <td>
-              ${outPlayer ? `<span class="sub-tag-out">🔴 OUT</span> <b>#${outPlayer.number}</b> ${outPlayer.name} <small style="color: #666;">(to Bench)</small>` : `<span style="color:#aaa;">—</span>`}
+              ${outPlayer ? `<span class="sub-tag-out">🔴 OUT</span> <b>#${outPlayer.number}</b>${outPlayer.name} <small style="color: #666;">(to Bench)</small>` : `<span style="color:#aaa;">—</span>`}
             </td>
           </tr>
         `;
@@ -973,13 +1146,21 @@
     function renderPitch() {
       const renderRow = (containerId, playerList, posLabel, isGk = false) => {
         const container = document.getElementById(containerId);
-        container.innerHTML = (playerList || []).map(p => `
-          <div class="pitch-player ${isGk ? 'gk-token' : ''}">
-            <div class="pitch-circle">#${p.number}</div>
-            <div class="pitch-name">${p.name}</div>
-            <div class="pitch-pos-label">${posLabel}</div>
-          </div>
-        `).join('');
+        container.innerHTML = (playerList || []).map(p => {
+          const livePlayer = players.find(x => x.id === p.id) || p;
+          const goalTally = livePlayer.goals || 0;
+          return `
+            <div class="pitch-player ${isGk ? 'gk-token' : ''}">
+              <div class="pitch-circle">
+                #${livePlayer.number}
+                ${goalTally > 0 ? `<div class="goal-bubble">${goalTally}⚽</div>` : ''}
+              </div>
+              <div class="pitch-name">${livePlayer.name}</div>
+              <div class="pitch-pos-label">${posLabel}</div>
+              <button class="pitch-goal-btn" onclick="addGoal(${livePlayer.id}, 1)">+ ⚽ Goal</button>
+            </div>
+          `;
+        }).join('');
       };
 
       renderRow('pitchFWD', currentAssignment.FWD, 'FWD');
@@ -995,13 +1176,18 @@
       if (benchPlayers.length === 0) {
         benchContainer.innerHTML = `<span style="font-size: 13px; color: #888;">No players on bench.</span>`;
       } else {
-        benchContainer.innerHTML = benchPlayers.map(p => `
-          <div class="bench-player-pill">
-            <span class="bench-number">#${p.number}</span>
-            <span class="bench-name">${p.name}</span>
-          </div>
-        `).join('');
+        benchContainer.innerHTML = benchPlayers.map(p => {
+          const livePlayer = players.find(x => x.id === p.id) || p;
+          return `
+            <div class="bench-player-pill">
+              <span class="bench-number">#${livePlayer.number}</span>
+              <span class="bench-name">${livePlayer.name}</span>
+              ${(livePlayer.goals || 0) > 0 ? `<span style="font-size:11px; font-weight:bold;">(${livePlayer.goals}⚽)</span>` : ''}
+            </div>
+          `;
+        }).join('');
       }
+      updateScoreboard();
     }
 
     function confirmShiftAndAdvance() {
@@ -1036,10 +1222,10 @@
     }
 
     function exportToCSV() {
-      let csv = "Number,Name,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD\n";
+      let csv = "Number,Name,Goals,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD\n";
       players.forEach(p => {
         const estMins = p.stats.totalMinutes || (p.stats.totalPlayed * (gameConfig.shiftDuration || 6)).toFixed(0);
-        csv += `"${p.number}","${p.name}",${estMins},${p.stats.totalPlayed},${p.stats.BENCH},${p.stats.GK},${p.stats.DEF},${p.stats.MID},${p.stats.FWD}\n`;
+        csv += `"${p.number}","${p.name}",${p.goals || 0},${estMins},${p.stats.totalPlayed},${p.stats.BENCH},${p.stats.GK},${p.stats.DEF},${p.stats.MID},${p.stats.FWD}\n`;
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -1052,8 +1238,9 @@
     }
 
     function resetSeason() {
-      if (confirm("Reset ALL player stats and shift counts to zero?")) {
+      if (confirm("Reset ALL player stats, goals, and shift counts to zero?")) {
         players.forEach(p => {
+          p.goals = 0;
           p.stats = { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 };
         });
         timerState.shift = 1;
@@ -1066,6 +1253,7 @@
         renderSeasonStats();
         renderPitch();
         renderSubstitutionCallout();
+        updateScoreboard();
       }
     }
 
@@ -1080,6 +1268,7 @@
     renderPitch();
     renderSubstitutionCallout();
     calculateFairPlay();
+    updateScoreboard();
   </script>
 </body>
 </html>
