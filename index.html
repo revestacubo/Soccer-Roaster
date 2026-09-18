@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Fair Play Soccer Manager</title>
+  <title id="pageTitle">Fair Play Soccer Manager</title>
   <style>
     :root {
       --primary: #1b5e20;
@@ -27,6 +27,21 @@
       -webkit-tap-highlight-color: transparent;
     }
     h1, h2, h3 { margin: 0 0 10px 0; }
+
+    /* Top Team Banner */
+    .team-header {
+      text-align: center;
+      padding: 4px 0 10px 0;
+    }
+    .team-name-display {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--primary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
     .tab-bar {
       display: flex;
       gap: 6px;
@@ -69,11 +84,13 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.06);
       margin-bottom: 14px;
     }
+
+    /* Timer Display */
     .timer-card {
       background: linear-gradient(135deg, #2e7d32, #1b5e20);
       color: white;
       text-align: center;
-      padding: 16px;
+      padding: 16px 14px;
       border-radius: 14px;
       margin-bottom: 14px;
       position: relative;
@@ -82,30 +99,20 @@
       font-size: 52px;
       font-weight: 800;
       font-variant-numeric: tabular-nums;
-      margin: 4px 0;
+      margin: 2px 0;
     }
     .timer-controls {
       display: flex;
       justify-content: center;
       gap: 8px;
       flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .notify-btn {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: white;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      margin-top: 10px;
-      cursor: pointer;
+      margin-top: 6px;
     }
     .progress-bar-container {
       background: rgba(255, 255, 255, 0.2);
       height: 8px;
       border-radius: 4px;
-      margin: 10px 0 4px 0;
+      margin: 8px 0 4px 0;
       overflow: hidden;
     }
     .progress-bar {
@@ -114,6 +121,39 @@
       width: 0%;
       transition: width 0.3s ease;
     }
+
+    /* Balance Calculation Bar Below Timer */
+    .timer-balance-bar {
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .balance-chip {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+    }
+    .balance-chip.good {
+      background: #4caf50;
+      color: white;
+      font-weight: bold;
+    }
+    .balance-chip.warn {
+      background: #ff9800;
+      color: #212121;
+      font-weight: bold;
+    }
+
     .calc-banner {
       background: #e8f5e9;
       border-left: 4px solid #2e7d32;
@@ -164,6 +204,7 @@
     .formation-inputs div { text-align: center; font-size: 12px; font-weight: bold; }
     .formation-inputs input { width: 100%; text-align: center; margin-top: 4px; }
     
+    /* Tactical Pitch */
     .pitch-container {
       position: relative;
       background: #388e3c;
@@ -171,7 +212,7 @@
       border: 3px solid white;
       border-radius: 10px;
       padding: 16px 10px;
-      min-height: 420px;
+      min-height: 440px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -212,7 +253,7 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      width: 80px;
+      width: 84px;
     }
     .pitch-circle {
       width: 38px;
@@ -249,11 +290,11 @@
       font-weight: 700;
       padding: 2px 6px;
       border-radius: 8px;
-      margin-top: 4px;
+      margin-top: 3px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 78px;
+      max-width: 82px;
     }
     .pitch-pos-label {
       font-size: 9px;
@@ -263,17 +304,29 @@
       letter-spacing: 0.5px;
       margin-top: 1px;
     }
-    .pitch-goal-btn {
-      background: rgba(255, 255, 255, 0.9);
-      color: #212121;
-      border: 1px solid #ccc;
+    .pitch-player-actions {
+      display: flex;
+      gap: 3px;
+      margin-top: 3px;
+    }
+    .pitch-btn-tiny {
       padding: 2px 5px;
       font-size: 10px;
       font-weight: bold;
-      border-radius: 6px;
-      margin-top: 3px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
       cursor: pointer;
     }
+    .pitch-goal-btn {
+      background: #fff;
+      color: #212121;
+    }
+    .pitch-inj-btn {
+      background: #ffebee;
+      color: #c62828;
+      border-color: #ef9a9a;
+    }
+
     .gk-token .pitch-circle {
       background: #ffeb3b;
       color: #b71c1c;
@@ -336,6 +389,7 @@
       font-weight: 700;
       color: #333;
     }
+
     .action-banner {
       background: #fff8e1;
       border: 2px solid #ffe082;
@@ -398,6 +452,7 @@
       padding: 2px 6px;
       border-radius: 6px;
     }
+
     .styled-table {
       width: 100%;
       border-collapse: collapse;
@@ -525,9 +580,34 @@
       color: #666;
       margin-top: 2px;
     }
+
+    /* Modal for Injury / Quick Sub */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-card {
+      background: white;
+      border-radius: 12px;
+      padding: 18px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
   </style>
 </head>
 <body>
+  <!-- TOP TEAM NAME BANNER -->
+  <div class="team-header">
+    <div class="team-name-display" id="topTeamName">⚡ Austin Thunder FC</div>
+  </div>
+
   <!-- TAB BAR -->
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('gameTab')">⚽ Game Day</button>
@@ -544,8 +624,32 @@
   <!-- HIDDEN FILE INPUT FOR IMPORTING CSV -->
   <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
 
+  <!-- INJURY / EMERGENCY SUB MODAL -->
+  <div class="modal-overlay" id="injuryModal">
+    <div class="modal-card">
+      <h3 style="margin-top: 0; color: #c62828;">🩹 Emergency Sub / Injury</h3>
+      <p style="font-size: 13px; color: #555;" id="injModalPlayerText">Player coming off:</p>
+      
+      <label style="font-size: 12px; font-weight: bold;">Select Bench Player to Sub In:</label>
+      <select id="injBenchSelect" style="width: 100%; margin: 6px 0 12px 0; font-weight: bold;"></select>
+
+      <div style="margin-bottom: 14px;">
+        <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+          <input type="checkbox" id="injMarkOutCheckbox" style="transform: scale(1.2);">
+          <span>Player cannot return today (mark absent for rest of match)</span>
+        </label>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="danger" style="flex: 1;" onclick="applyInjurySub()">Confirm Sub</button>
+        <button class="secondary" style="flex: 1;" onclick="closeInjuryModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== TAB 1: GAME DAY ==================== -->
   <div id="gameTab" class="tab-content active">
+    <!-- TIMER CARD -->
     <div class="timer-card">
       <div style="font-size: 13px; letter-spacing: 0.5px; opacity: 0.9;">
         <span id="shiftIndicator">SHIFT 1 OF 6</span> — <span id="rotationsCompletedText">0 rotations completed</span>
@@ -560,10 +664,18 @@
         <button class="secondary" onclick="resetTimer()">↺ Reset</button>
         <button class="secondary" onclick="previewCurrentSound()">🔊 Test</button>
       </div>
-      <div>
-        <button class="notify-btn" id="notifyBtn" onclick="requestNotificationPermission()">
-          ⌚ Enable Apple Watch Alerts
-        </button>
+
+      <!-- BALANCE CALCULATION BAR BELOW TIMER -->
+      <div class="timer-balance-bar">
+        <div>
+          <span>Target: </span>
+          <span id="timerTargetMins" style="color: #ffd54f;">26m / player</span>
+        </div>
+        <div>
+          <span>Shift Spread: </span>
+          <span id="timerShiftSpread" style="color: #ffffff;">0 shifts</span>
+        </div>
+        <div id="timerBalanceChip" class="balance-chip good">✓ Balanced</div>
       </div>
     </div>
 
@@ -709,6 +821,13 @@
   <!-- ==================== TAB 3: SETUP ==================== -->
   <div id="setupTab" class="tab-content">
     <div class="card">
+      <h3>Team & Club Details</h3>
+      <label style="font-size: 13px; font-weight: bold;">Team / Club Name:</label>
+      <input type="text" id="teamNameInput" placeholder="e.g. Austin Thunder FC" style="width: 100%; margin-top: 4px; font-weight: bold; font-size: 15px;" onchange="updateTeamName(this.value)">
+      <p style="font-size: 12px; color: #666; margin: 4px 0 0 0;">Appears on top banner, scoreboard, and CSV reports.</p>
+    </div>
+
+    <div class="card">
       <h3>Match Time & Formation Setup</h3>
       <label style="font-size: 13px; font-weight: bold;">Total Game Duration (Minutes):</label>
       <select id="gameDurationSelect" onchange="calculateFairPlay()" style="width: 100%; margin-top: 4px; margin-bottom: 10px;">
@@ -739,7 +858,6 @@
       <div class="calc-banner" id="calcOutput">Calculating fair rotation...</div>
     </div>
 
-    <!-- Data Import / Export Quick Bar -->
     <div class="card">
       <h3>Data Backup & Restore</h3>
       <p style="font-size: 12px; color: #666; margin-top: -6px;">Export your complete season to CSV or restore from an existing file.</p>
@@ -833,7 +951,17 @@
       }
     }
 
-    let appSettings = safeLoad('soccer_settings_v18', {
+    let teamName = safeLoad('soccer_team_name_v20', "⚡ Austin Thunder FC");
+
+    function updateTeamName(name) {
+      teamName = (name && name.trim()) ? name.trim() : "⚡ Austin Thunder FC";
+      localStorage.setItem('soccer_team_name_v20', JSON.stringify(teamName));
+      document.getElementById('topTeamName').innerText = teamName;
+      document.getElementById('teamNameInput').value = teamName;
+      document.getElementById('pageTitle').innerText = `${teamName} — Fair Play Soccer`;
+    }
+
+    let appSettings = safeLoad('soccer_settings_v20', {
       soundType: 'whistle',
       continuousAlarm: false,
       volume: 0.7
@@ -846,7 +974,7 @@
       appSettings.continuousAlarm = document.getElementById('continuousAlarmToggle').checked;
       appSettings.volume = parseFloat(document.getElementById('volumeSlider').value);
       document.getElementById('volumeLabel').innerText = `${Math.round(appSettings.volume * 100)}%`;
-      localStorage.setItem('soccer_settings_v18', JSON.stringify(appSettings));
+      localStorage.setItem('soccer_settings_v20', JSON.stringify(appSettings));
     }
 
     function initSettingsUI() {
@@ -854,6 +982,7 @@
       document.getElementById('continuousAlarmToggle').checked = !!appSettings.continuousAlarm;
       document.getElementById('volumeSlider').value = appSettings.volume || 0.7;
       document.getElementById('volumeLabel').innerText = `${Math.round((appSettings.volume || 0.7) * 100)}%`;
+      document.getElementById('teamNameInput').value = teamName;
     }
 
     function playSelectedTone(preview = false) {
@@ -965,27 +1094,6 @@
       document.getElementById('alarmActionBar').style.display = 'none';
     }
 
-    function requestNotificationPermission() {
-      if (!("Notification" in window)) {
-        alert("This browser does not support web push notifications.");
-        return;
-      }
-      Notification.requestPermission().then(permission => {
-        const btn = document.getElementById('notifyBtn');
-        if (permission === "granted") {
-          btn.innerText = "✓ Apple Watch Alerts Active";
-          btn.style.background = "rgba(76, 175, 80, 0.4)";
-          new Notification("Fair Play Soccer", { body: "Notifications enabled! Alerts will vibrate your Apple Watch." });
-        }
-      });
-    }
-
-    function sendWatchNotification(title, message) {
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(title, { body: message, icon: 'https://img.icons8.com/color/96/football2--v1.png' });
-      }
-    }
-
     let wakeLock = null;
     async function requestWakeLock() {
       try {
@@ -1003,6 +1111,7 @@
         document.getElementById('gameTab').classList.add('active');
         renderAttendanceTable();
         renderPitch();
+        updateBalanceBar();
       } else if (tabId === 'statsTab') {
         document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
         document.getElementById('statsTab').classList.add('active');
@@ -1017,7 +1126,7 @@
     }
 
     let timerInterval = null;
-    let timerState = safeLoad('soccer_timer_v18', {
+    let timerState = safeLoad('soccer_timer_v20', {
       running: false,
       remaining: 6 * 60,
       totalDuration: 6 * 60,
@@ -1026,15 +1135,15 @@
       rotationsCompleted: 0,
       matchActive: false
     });
-    let gameConfig = safeLoad('soccer_game_config_v18', {
+    let gameConfig = safeLoad('soccer_game_config_v20', {
       gameDuration: 40,
       shiftDuration: 6,
       suggestedShifts: 6
     });
-    let matchHistory = safeLoad('soccer_match_history_v18', []);
-    let formation = safeLoad('soccer_formation_v18', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
-    let currentAssignment = safeLoad('soccer_current_assignment_v18', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
-    let previousAssignment = safeLoad('soccer_prev_assignment_v18', null);
+    let matchHistory = safeLoad('soccer_match_history_v20', []);
+    let formation = safeLoad('soccer_formation_v20', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
+    let currentAssignment = safeLoad('soccer_current_assignment_v20', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
+    let previousAssignment = safeLoad('soccer_prev_assignment_v20', null);
 
     let defaultPlayers = [
       { id: 1, number: 7,  name: "Alex", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
@@ -1046,7 +1155,7 @@
       { id: 7, number: 11, name: "Leo",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
       { id: 8, number: 5,  name: "Zoe",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
     ];
-    let players = safeLoad('soccer_squad_v18', defaultPlayers);
+    let players = safeLoad('soccer_squad_v20', defaultPlayers);
 
     players.forEach(p => { 
       if (typeof p.goals !== 'number') p.goals = 0; 
@@ -1055,13 +1164,13 @@
 
     function saveAll() {
       try {
-        localStorage.setItem('soccer_squad_v18', JSON.stringify(players));
-        localStorage.setItem('soccer_timer_v18', JSON.stringify(timerState));
-        localStorage.setItem('soccer_current_assignment_v18', JSON.stringify(currentAssignment));
-        localStorage.setItem('soccer_prev_assignment_v18', JSON.stringify(previousAssignment));
-        localStorage.setItem('soccer_formation_v18', JSON.stringify(formation));
-        localStorage.setItem('soccer_game_config_v18', JSON.stringify(gameConfig));
-        localStorage.setItem('soccer_match_history_v18', JSON.stringify(matchHistory));
+        localStorage.setItem('soccer_squad_v20', JSON.stringify(players));
+        localStorage.setItem('soccer_timer_v20', JSON.stringify(timerState));
+        localStorage.setItem('soccer_current_assignment_v20', JSON.stringify(currentAssignment));
+        localStorage.setItem('soccer_prev_assignment_v20', JSON.stringify(previousAssignment));
+        localStorage.setItem('soccer_formation_v20', JSON.stringify(formation));
+        localStorage.setItem('soccer_game_config_v20', JSON.stringify(gameConfig));
+        localStorage.setItem('soccer_match_history_v20', JSON.stringify(matchHistory));
       } catch (e) {}
     }
 
@@ -1108,6 +1217,46 @@
       document.getElementById('rotationProgress').style.width = `${pct}%`;
     }
 
+    // UPDATE BALANCE CALCULATION BAR BELOW TIMER
+    function updateBalanceBar() {
+      const attending = players.filter(p => p.present);
+      const fieldSpots = formation.GK + formation.DEF + formation.MID + formation.FWD;
+      const gameMins = gameConfig.gameDuration || 40;
+
+      const targetEl = document.getElementById('timerTargetMins');
+      const spreadEl = document.getElementById('timerShiftSpread');
+      const chipEl = document.getElementById('timerBalanceChip');
+
+      if (!targetEl || !spreadEl || !chipEl) return;
+
+      if (attending.length === 0 || fieldSpots === 0) {
+        targetEl.innerText = "-- mins";
+        spreadEl.innerText = "0 shifts";
+        chipEl.className = "balance-chip good";
+        chipEl.innerText = "Check Squad";
+        return;
+      }
+
+      const totalPlayerMinutes = gameMins * fieldSpots;
+      const fairTimePerPlayer = (totalPlayerMinutes / attending.length).toFixed(0);
+      targetEl.innerText = `~${fairTimePerPlayer}m / player`;
+
+      const shiftsPlayed = attending.map(p => p.stats.totalPlayed || 0);
+      const maxShifts = Math.max(...shiftsPlayed);
+      const minShifts = Math.min(...shiftsPlayed);
+      const spread = maxShifts - minShifts;
+
+      spreadEl.innerText = `Spread: ${spread} shift${spread === 1 ? '' : 's'} (${minShifts}-${maxShifts})`;
+
+      if (spread <= 1) {
+        chipEl.className = "balance-chip good";
+        chipEl.innerText = "✓ Balanced (Fair Rotation)";
+      } else {
+        chipEl.className = "balance-chip warn";
+        chipEl.innerText = "⚡ Equalizing Shifts";
+      }
+    }
+
     function calculateFairPlay() {
       formation.GK = parseInt(document.getElementById('numGK').value) || 0;
       formation.DEF = parseInt(document.getElementById('numDEF').value) || 0;
@@ -1123,6 +1272,7 @@
 
       if (attending === 0 || fieldSpots === 0) {
         banner.innerHTML = "Check attendance and field spots.";
+        updateBalanceBar();
         return;
       }
 
@@ -1157,6 +1307,7 @@
         }
       }
       updateRotationDisplay();
+      updateBalanceBar();
       saveAll();
     }
 
@@ -1169,14 +1320,9 @@
       }
       updateTimerDisplay();
       updateRotationDisplay();
+      updateBalanceBar();
       updateGenerateButtonState();
       document.getElementById('gameDurationSelect').value = gameConfig.gameDuration;
-
-      if ("Notification" in window && Notification.permission === "granted") {
-        const btn = document.getElementById('notifyBtn');
-        btn.innerText = "✓ Apple Watch Alerts Active";
-        btn.style.background = "rgba(76, 175, 80, 0.4)";
-      }
 
       if (timerState.running && timerState.remaining > 0) {
         startTimerLoop();
@@ -1206,8 +1352,6 @@
           if (timerState.remaining === 0) {
             pauseTimer();
             triggerShiftAlarm();
-            sendWatchNotification("⏰ Shift Ended!", "Substitutions are ready on screen.");
-            
             generateLineupInternal();
 
             if (!appSettings.continuousAlarm) {
@@ -1338,6 +1482,7 @@
           <td style="text-align: center; font-weight: bold; font-size: 13px;">${p.stats.totalPlayed}</td>
         </tr>
       `).join('');
+      updateBalanceBar();
     }
 
     function renderManageRoster() {
@@ -1482,6 +1627,7 @@
       saveAll();
       renderPitch();
       renderSubstitutionCallout();
+      updateBalanceBar();
     }
 
     function renderSubstitutionCallout() {
@@ -1566,7 +1712,10 @@
               </div>
               <div class="pitch-name">${livePlayer.name}</div>
               <div class="pitch-pos-label">${posLabel}</div>
-              <button class="pitch-goal-btn" onclick="addGoal(${livePlayer.id}, 1)">+ ⚽ Goal</button>
+              <div class="pitch-player-actions">
+                <button class="pitch-btn-tiny pitch-goal-btn" onclick="addGoal(${livePlayer.id}, 1)">+⚽</button>
+                <button class="pitch-btn-tiny pitch-inj-btn" onclick="openInjuryModal(${livePlayer.id}, '${posLabel}')">🩹Sub</button>
+              </div>
             </div>
           `;
         }).join('');
@@ -1597,6 +1746,74 @@
         }).join('');
       }
       updateScoreboard();
+    }
+
+    // INJURY / EMERGENCY MID-SHIFT SUB LOGIC
+    let activeInjuryContext = null;
+
+    function openInjuryModal(playerId, pos) {
+      const player = players.find(p => p.id === playerId);
+      if (!player) return;
+
+      const benchPlayers = (currentAssignment.BENCH || []).map(bp => players.find(p => p.id === bp.id)).filter(p => p && p.present);
+
+      if (benchPlayers.length === 0) {
+        alert("There are no available players currently resting on the bench to substitute in.");
+        return;
+      }
+
+      activeInjuryContext = { playerId, pos };
+      document.getElementById('injModalPlayerText').innerHTML = `Coming off: <b>#${player.number} ${player.name}</b> (${pos})`;
+
+      const select = document.getElementById('injBenchSelect');
+      select.innerHTML = benchPlayers.map(bp => `
+        <option value="${bp.id}">#${bp.number} ${bp.name} (Played: ${bp.stats.totalPlayed} shifts)</option>
+      `).join('');
+
+      document.getElementById('injMarkOutCheckbox').checked = false;
+      document.getElementById('injuryModal').style.display = 'flex';
+    }
+
+    function closeInjuryModal() {
+      document.getElementById('injuryModal').style.display = 'none';
+      activeInjuryContext = null;
+    }
+
+    function applyInjurySub() {
+      if (!activeInjuryContext) return;
+      const { playerId, pos } = activeInjuryContext;
+      const incomingId = parseInt(document.getElementById('injBenchSelect').value);
+      const markAbsent = document.getElementById('injMarkOutCheckbox').checked;
+
+      const outgoing = players.find(p => p.id === playerId);
+      const incoming = players.find(p => p.id === incomingId);
+
+      if (!outgoing || !incoming) {
+        closeInjuryModal();
+        return;
+      }
+
+      // 1. Swap on the field array
+      currentAssignment[pos] = currentAssignment[pos].filter(p => p.id !== outgoing.id);
+      currentAssignment[pos].push(incoming);
+
+      // 2. Swap on the bench array
+      currentAssignment.BENCH = currentAssignment.BENCH.filter(p => p.id !== incoming.id);
+      currentAssignment.BENCH.push(outgoing);
+
+      // 3. Mark player absent if they can't continue today
+      if (markAbsent) {
+        outgoing.present = false;
+      }
+
+      saveAll();
+      closeInjuryModal();
+      renderAttendanceTable();
+      renderPitch();
+      renderSubstitutionCallout();
+      updateBalanceBar();
+
+      alert(`🩹 Sub confirmed: #${incoming.number} ${incoming.name} entered for #${outgoing.number} ${outgoing.name}.`);
     }
 
     // ADVANCE SHIFT & RE-TRIGGER ROTATION
@@ -1677,9 +1894,9 @@
         renderSeasonStats();
         updateRotationDisplay();
         updateScoreboard();
+        updateBalanceBar();
         updateGenerateButtonState();
 
-        // AUTOMATICALLY EXPORT THE COMPLETE CSV BACKUP
         exportToCSV(true);
 
         alert(`Match recorded! Result: ${result} (${totalTeamGoals} - ${oppGoals}).\nStats saved and CSV backup downloaded.`);
@@ -1691,7 +1908,8 @@
 
     // CSV EXPORT ENGINE
     function exportToCSV(isAuto = false) {
-      let csv = "Number,Name,Season Goals,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD\n";
+      let csv = `Team: "${teamName}"\n`;
+      csv += "Number,Name,Season Goals,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD\n";
       players.forEach(p => {
         const estMins = p.stats.totalMinutes || (p.stats.totalPlayed * (gameConfig.shiftDuration || 6)).toFixed(0);
         csv += `"${p.number}","${p.name}",${p.goals || 0},${estMins},${p.stats.totalPlayed},${p.stats.BENCH},${p.stats.GK},${p.stats.DEF},${p.stats.MID},${p.stats.FWD}\n`;
@@ -1706,7 +1924,7 @@
       const link = document.createElement("a");
       link.setAttribute("href", url);
       const filenameSuffix = isAuto ? "match_end" : "manual";
-      link.setAttribute("download", `soccer_season_stats_${new Date().toISOString().slice(0,10)}_${filenameSuffix}.csv`);
+      link.setAttribute("download", `${teamName.replace(/[^a-zA-Z0-9]/g, '_')}_stats_${new Date().toISOString().slice(0,10)}_${filenameSuffix}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1768,6 +1986,12 @@
         for (let i = 0; i < rawLines.length; i++) {
           const line = rawLines[i];
 
+          if (line.startsWith('Team:')) {
+            const parsedName = parseCSVLine(line.replace('Team:', ''))[0];
+            if (parsedName) updateTeamName(parsedName);
+            continue;
+          }
+
           if (line === "[MATCH_HISTORY]" || line.startsWith("Date,Result,Team Goals")) {
             inMatchHistorySection = true;
             continue;
@@ -1780,7 +2004,6 @@
           const cols = parseCSVLine(line);
 
           if (!inMatchHistorySection) {
-            // Player line format: Number,Name,Season Goals,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD
             if (cols.length >= 10 && cols[0] !== "Number") {
               const number = cols[0];
               const name = cols[1];
@@ -1812,7 +2035,6 @@
               });
             }
           } else {
-            // Match line format: Date,Result,Team Goals,Opponent Goals,Opponent Name
             if (cols.length >= 5 && cols[0] !== "Date") {
               newMatchHistory.push({
                 id: Date.now() + i,
@@ -1851,6 +2073,7 @@
           renderSubstitutionCallout();
           updateScoreboard();
           updateRotationDisplay();
+          updateBalanceBar();
           updateGenerateButtonState();
 
           alert("✓ Season data and squad roster successfully imported!");
@@ -1883,6 +2106,7 @@
         renderSubstitutionCallout();
         updateScoreboard();
         updateRotationDisplay();
+        updateBalanceBar();
         updateGenerateButtonState();
       }
     }
@@ -1893,6 +2117,7 @@
     document.getElementById('numMID').value = formation.MID;
     document.getElementById('numFWD').value = formation.FWD;
 
+    updateTeamName(teamName);
     initTimerFromStorage();
     initSettingsUI();
     renderAttendanceTable();
