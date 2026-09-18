@@ -211,12 +211,11 @@
       background-image: repeating-linear-gradient(0deg, #2e7d32, #2e7d32 40px, #388e3c 40px, #388e3c 80px);
       border: 3px solid white;
       border-radius: 10px;
-      padding: 16px 10px;
-      min-height: 440px;
+      padding: 18px 10px 24px 10px;
+      min-height: 470px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      overflow: hidden;
     }
     .pitch-container::before {
       content: "";
@@ -246,18 +245,18 @@
       align-items: center;
       position: relative;
       z-index: 2;
-      margin: 4px 0;
+      margin: 6px 0;
     }
     .pitch-player {
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      width: 84px;
+      width: 90px;
     }
     .pitch-circle {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: #ffffff;
       color: #1b5e20;
@@ -294,7 +293,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 82px;
+      max-width: 85px;
     }
     .pitch-pos-label {
       font-size: 9px;
@@ -306,25 +305,26 @@
     }
     .pitch-player-actions {
       display: flex;
-      gap: 3px;
-      margin-top: 3px;
+      gap: 4px;
+      margin-top: 4px;
     }
     .pitch-btn-tiny {
-      padding: 2px 5px;
+      padding: 3px 6px;
       font-size: 10px;
-      font-weight: bold;
-      border-radius: 5px;
-      border: 1px solid #ddd;
+      font-weight: 800;
+      border-radius: 6px;
       cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
     }
     .pitch-goal-btn {
-      background: #fff;
-      color: #212121;
+      background: #ffffff !important;
+      color: #1b5e20 !important;
+      border: 1px solid #c8e6c9 !important;
     }
     .pitch-inj-btn {
-      background: #ffebee;
-      color: #c62828;
-      border-color: #ef9a9a;
+      background: #ffebee !important;
+      color: #c62828 !important;
+      border: 1px solid #ef9a9a !important;
     }
 
     .gk-token .pitch-circle {
@@ -399,12 +399,15 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .action-banner-text {
       font-size: 13px;
       font-weight: 700;
       color: #795548;
     }
+
     .subs-card {
       background: #eef2f7;
       border: 2px solid #90caf9;
@@ -597,8 +600,8 @@
       border-radius: 12px;
       padding: 18px;
       width: 100%;
-      max-width: 380px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      max-width: 400px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
     }
   </style>
 </head>
@@ -627,21 +630,27 @@
   <!-- INJURY / EMERGENCY SUB MODAL -->
   <div class="modal-overlay" id="injuryModal">
     <div class="modal-card">
-      <h3 style="margin-top: 0; color: #c62828;">🩹 Emergency Sub / Injury</h3>
-      <p style="font-size: 13px; color: #555;" id="injModalPlayerText">Player coming off:</p>
+      <h3 style="margin-top: 0; color: #c62828;">🩹 Emergency Sub / Injury Swap</h3>
       
-      <label style="font-size: 12px; font-weight: bold;">Select Bench Player to Sub In:</label>
-      <select id="injBenchSelect" style="width: 100%; margin: 6px 0 12px 0; font-weight: bold;"></select>
+      <div style="margin-bottom: 10px;">
+        <label style="font-size: 12px; font-weight: bold;">Player Coming Off Pitch:</label>
+        <select id="injOffSelect" style="width: 100%; margin-top: 4px; font-weight: bold;" onchange="syncInjuryModalFields()"></select>
+      </div>
+      
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: bold;">Bench Player Entering Pitch:</label>
+        <select id="injBenchSelect" style="width: 100%; margin-top: 4px; font-weight: bold;"></select>
+      </div>
 
-      <div style="margin-bottom: 14px;">
-        <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-          <input type="checkbox" id="injMarkOutCheckbox" style="transform: scale(1.2);">
-          <span>Player cannot return today (mark absent for rest of match)</span>
+      <div style="margin-bottom: 14px; background: #fff3e0; padding: 8px; border-radius: 6px;">
+        <label style="font-size: 12px; display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+          <input type="checkbox" id="injMarkOutCheckbox" style="transform: scale(1.2); margin-top: 2px;">
+          <span><b>Out for the match:</b> Check if player cannot return today (removes them from future rotations).</span>
         </label>
       </div>
 
       <div style="display: flex; gap: 8px;">
-        <button class="danger" style="flex: 1;" onclick="applyInjurySub()">Confirm Sub</button>
+        <button class="danger" style="flex: 1;" onclick="applyInjurySub()">Confirm Swap</button>
         <button class="secondary" style="flex: 1;" onclick="closeInjuryModal()">Cancel</button>
       </div>
     </div>
@@ -687,16 +696,17 @@
             <h3>Match Attendance</h3>
             <button class="secondary" style="padding: 4px 8px; font-size: 11px;" onclick="switchTab('setupTab')">⚙️ Edit Squad</button>
           </div>
-          <p style="font-size: 12px; color: #666; margin-top: -4px;">Check attending players. Tap ⚽ to log a goal.</p>
+          <p style="font-size: 12px; color: #666; margin-top: -4px;">Check attending players. Tap ⚽ for goals, 🩹 to sub.</p>
 
           <table class="styled-table">
             <thead>
               <tr>
-                <th style="width: 28px; text-align: center;">Att</th>
-                <th style="width: 44px;">#</th>
+                <th style="width: 26px; text-align: center;">Att</th>
+                <th style="width: 40px;">#</th>
                 <th>Player</th>
-                <th style="width: 70px; text-align: center;">Goals</th>
-                <th style="width: 38px; text-align: center;">Shifts</th>
+                <th style="width: 68px; text-align: center;">Goals</th>
+                <th style="width: 32px; text-align: center;">Shifts</th>
+                <th style="width: 32px; text-align: center;">Sub</th>
               </tr>
             </thead>
             <tbody id="attendanceTableBody"></tbody>
@@ -709,9 +719,12 @@
       <div>
         <div class="action-banner">
           <div class="action-banner-text">Ready to rotate shifts?</div>
-          <div style="display: flex; gap: 6px;">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
             <button class="warning" style="padding: 10px 14px; font-size: 14px;" onclick="confirmShiftAndAdvance()">
               Rotate & Save Shift
+            </button>
+            <button class="danger" style="padding: 10px 12px; font-size: 13px;" onclick="openInjuryModal(null, null)">
+              🩹 Sub / Injury
             </button>
             <button class="secondary" style="padding: 10px 10px; font-size: 13px;" onclick="promptFinishMatch(true)">
               End Match
@@ -951,17 +964,17 @@
       }
     }
 
-    let teamName = safeLoad('soccer_team_name_v20', "⚡ Austin Thunder FC");
+    let teamName = safeLoad('soccer_team_name_v21', "⚡ Austin Thunder FC");
 
     function updateTeamName(name) {
       teamName = (name && name.trim()) ? name.trim() : "⚡ Austin Thunder FC";
-      localStorage.setItem('soccer_team_name_v20', JSON.stringify(teamName));
+      localStorage.setItem('soccer_team_name_v21', JSON.stringify(teamName));
       document.getElementById('topTeamName').innerText = teamName;
       document.getElementById('teamNameInput').value = teamName;
       document.getElementById('pageTitle').innerText = `${teamName} — Fair Play Soccer`;
     }
 
-    let appSettings = safeLoad('soccer_settings_v20', {
+    let appSettings = safeLoad('soccer_settings_v21', {
       soundType: 'whistle',
       continuousAlarm: false,
       volume: 0.7
@@ -974,7 +987,7 @@
       appSettings.continuousAlarm = document.getElementById('continuousAlarmToggle').checked;
       appSettings.volume = parseFloat(document.getElementById('volumeSlider').value);
       document.getElementById('volumeLabel').innerText = `${Math.round(appSettings.volume * 100)}%`;
-      localStorage.setItem('soccer_settings_v20', JSON.stringify(appSettings));
+      localStorage.setItem('soccer_settings_v21', JSON.stringify(appSettings));
     }
 
     function initSettingsUI() {
@@ -1126,7 +1139,7 @@
     }
 
     let timerInterval = null;
-    let timerState = safeLoad('soccer_timer_v20', {
+    let timerState = safeLoad('soccer_timer_v21', {
       running: false,
       remaining: 6 * 60,
       totalDuration: 6 * 60,
@@ -1135,15 +1148,15 @@
       rotationsCompleted: 0,
       matchActive: false
     });
-    let gameConfig = safeLoad('soccer_game_config_v20', {
+    let gameConfig = safeLoad('soccer_game_config_v21', {
       gameDuration: 40,
       shiftDuration: 6,
       suggestedShifts: 6
     });
-    let matchHistory = safeLoad('soccer_match_history_v20', []);
-    let formation = safeLoad('soccer_formation_v20', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
-    let currentAssignment = safeLoad('soccer_current_assignment_v20', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
-    let previousAssignment = safeLoad('soccer_prev_assignment_v20', null);
+    let matchHistory = safeLoad('soccer_match_history_v21', []);
+    let formation = safeLoad('soccer_formation_v21', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
+    let currentAssignment = safeLoad('soccer_current_assignment_v21', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
+    let previousAssignment = safeLoad('soccer_prev_assignment_v21', null);
 
     let defaultPlayers = [
       { id: 1, number: 7,  name: "Alex", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
@@ -1155,7 +1168,7 @@
       { id: 7, number: 11, name: "Leo",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
       { id: 8, number: 5,  name: "Zoe",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
     ];
-    let players = safeLoad('soccer_squad_v20', defaultPlayers);
+    let players = safeLoad('soccer_squad_v21', defaultPlayers);
 
     players.forEach(p => { 
       if (typeof p.goals !== 'number') p.goals = 0; 
@@ -1164,13 +1177,13 @@
 
     function saveAll() {
       try {
-        localStorage.setItem('soccer_squad_v20', JSON.stringify(players));
-        localStorage.setItem('soccer_timer_v20', JSON.stringify(timerState));
-        localStorage.setItem('soccer_current_assignment_v20', JSON.stringify(currentAssignment));
-        localStorage.setItem('soccer_prev_assignment_v20', JSON.stringify(previousAssignment));
-        localStorage.setItem('soccer_formation_v20', JSON.stringify(formation));
-        localStorage.setItem('soccer_game_config_v20', JSON.stringify(gameConfig));
-        localStorage.setItem('soccer_match_history_v20', JSON.stringify(matchHistory));
+        localStorage.setItem('soccer_squad_v21', JSON.stringify(players));
+        localStorage.setItem('soccer_timer_v21', JSON.stringify(timerState));
+        localStorage.setItem('soccer_current_assignment_v21', JSON.stringify(currentAssignment));
+        localStorage.setItem('soccer_prev_assignment_v21', JSON.stringify(previousAssignment));
+        localStorage.setItem('soccer_formation_v21', JSON.stringify(formation));
+        localStorage.setItem('soccer_game_config_v21', JSON.stringify(gameConfig));
+        localStorage.setItem('soccer_match_history_v21', JSON.stringify(matchHistory));
       } catch (e) {}
     }
 
@@ -1480,6 +1493,9 @@
             </div>
           </td>
           <td style="text-align: center; font-weight: bold; font-size: 13px;">${p.stats.totalPlayed}</td>
+          <td style="text-align: center;">
+            <button class="pitch-btn-tiny pitch-inj-btn" style="padding: 3px 5px;" onclick="openInjuryModal(${p.id}, null)" title="Sub / Injury">🩹</button>
+          </td>
         </tr>
       `).join('');
       updateBalanceBar();
@@ -1748,60 +1764,90 @@
       updateScoreboard();
     }
 
-    // INJURY / EMERGENCY MID-SHIFT SUB LOGIC
-    let activeInjuryContext = null;
+    // INJURY / EMERGENCY MID-SHIFT SUB MODAL
+    function openInjuryModal(preselectedPlayerId = null, preselectedPos = null) {
+      const modal = document.getElementById('injuryModal');
+      const offSelect = document.getElementById('injOffSelect');
+      const benchSelect = document.getElementById('injBenchSelect');
 
-    function openInjuryModal(playerId, pos) {
-      const player = players.find(p => p.id === playerId);
-      if (!player) return;
+      // Get all active players on pitch
+      const pitchPositions = ['FWD', 'MID', 'DEF', 'GK'];
+      let onPitchList = [];
+      pitchPositions.forEach(pos => {
+        (currentAssignment[pos] || []).forEach(p => {
+          const fullP = players.find(x => x.id === p.id) || p;
+          onPitchList.push({ id: fullP.id, name: fullP.name, number: fullP.number, pos: pos });
+        });
+      });
 
-      const benchPlayers = (currentAssignment.BENCH || []).map(bp => players.find(p => p.id === bp.id)).filter(p => p && p.present);
+      if (onPitchList.length === 0) {
+        alert("There are no active players on the pitch yet. Generate a lineup first!");
+        return;
+      }
+
+      // Bench players available
+      const benchPlayers = (currentAssignment.BENCH || [])
+        .map(bp => players.find(p => p.id === bp.id))
+        .filter(p => p && p.present);
 
       if (benchPlayers.length === 0) {
         alert("There are no available players currently resting on the bench to substitute in.");
         return;
       }
 
-      activeInjuryContext = { playerId, pos };
-      document.getElementById('injModalPlayerText').innerHTML = `Coming off: <b>#${player.number} ${player.name}</b> (${pos})`;
+      // Populate Off Select
+      offSelect.innerHTML = onPitchList.map(op => `
+        <option value="${op.id}" data-pos="${op.pos}" ${preselectedPlayerId === op.id ? 'selected' : ''}>
+          #${op.number} ${op.name} (${op.pos})
+        </option>
+      `).join('');
 
-      const select = document.getElementById('injBenchSelect');
-      select.innerHTML = benchPlayers.map(bp => `
-        <option value="${bp.id}">#${bp.number} ${bp.name} (Played: ${bp.stats.totalPlayed} shifts)</option>
+      // Populate Bench Select
+      benchSelect.innerHTML = benchPlayers.map(bp => `
+        <option value="${bp.id}">
+          #${bp.number} ${bp.name} (Played: ${bp.stats.totalPlayed} shifts)
+        </option>
       `).join('');
 
       document.getElementById('injMarkOutCheckbox').checked = false;
-      document.getElementById('injuryModal').style.display = 'flex';
+      modal.style.display = 'flex';
+    }
+
+    function syncInjuryModalFields() {
+      // Optional hook when user toggles offSelect dropdown
     }
 
     function closeInjuryModal() {
       document.getElementById('injuryModal').style.display = 'none';
-      activeInjuryContext = null;
     }
 
     function applyInjurySub() {
-      if (!activeInjuryContext) return;
-      const { playerId, pos } = activeInjuryContext;
-      const incomingId = parseInt(document.getElementById('injBenchSelect').value);
+      const offSelect = document.getElementById('injOffSelect');
+      const benchSelect = document.getElementById('injBenchSelect');
+      const outgoingId = parseInt(offSelect.value);
+      const incomingId = parseInt(benchSelect.value);
       const markAbsent = document.getElementById('injMarkOutCheckbox').checked;
 
-      const outgoing = players.find(p => p.id === playerId);
+      const selectedOption = offSelect.options[offSelect.selectedIndex];
+      const pos = selectedOption.getAttribute('data-pos');
+
+      const outgoing = players.find(p => p.id === outgoingId);
       const incoming = players.find(p => p.id === incomingId);
 
-      if (!outgoing || !incoming) {
+      if (!outgoing || !incoming || !pos) {
         closeInjuryModal();
         return;
       }
 
       // 1. Swap on the field array
-      currentAssignment[pos] = currentAssignment[pos].filter(p => p.id !== outgoing.id);
+      currentAssignment[pos] = (currentAssignment[pos] || []).filter(p => p.id !== outgoing.id);
       currentAssignment[pos].push(incoming);
 
       // 2. Swap on the bench array
-      currentAssignment.BENCH = currentAssignment.BENCH.filter(p => p.id !== incoming.id);
+      currentAssignment.BENCH = (currentAssignment.BENCH || []).filter(p => p.id !== incoming.id);
       currentAssignment.BENCH.push(outgoing);
 
-      // 3. Mark player absent if they can't continue today
+      // 3. Mark player absent if injured for rest of match
       if (markAbsent) {
         outgoing.present = false;
       }
