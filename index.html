@@ -100,6 +100,19 @@
       margin-top: 10px;
       cursor: pointer;
     }
+    .progress-bar-container {
+      background: rgba(255, 255, 255, 0.2);
+      height: 8px;
+      border-radius: 4px;
+      margin: 10px 0 4px 0;
+      overflow: hidden;
+    }
+    .progress-bar {
+      background: #ffd54f;
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
     .calc-banner {
       background: #e8f5e9;
       border-left: 4px solid #2e7d32;
@@ -144,7 +157,6 @@
     .formation-inputs div { text-align: center; font-size: 12px; font-weight: bold; }
     .formation-inputs input { width: 100%; text-align: center; margin-top: 4px; }
     
-    /* Pitch Container & Player Tokens */
     .pitch-container {
       position: relative;
       background: #388e3c;
@@ -261,7 +273,6 @@
       border-color: #b71c1c;
     }
 
-    /* Scoreboard Banner */
     .scoreboard-banner {
       background: #212121;
       color: white;
@@ -275,7 +286,6 @@
       font-size: 14px;
     }
 
-    /* Bench */
     .bench-card {
       background: #fff3e0;
       border: 2px dashed #ff9800;
@@ -322,7 +332,6 @@
       color: #333;
     }
 
-    /* Quick Rotate Action Bar */
     .action-banner {
       background: #fff8e1;
       border: 2px solid #ffe082;
@@ -339,7 +348,6 @@
       color: #795548;
     }
 
-    /* Subs Card */
     .subs-card {
       background: #eef2f7;
       border: 2px solid #90caf9;
@@ -388,7 +396,6 @@
       border-radius: 6px;
     }
 
-    /* Tables */
     .styled-table {
       width: 100%;
       border-collapse: collapse;
@@ -457,6 +464,30 @@
       font-size: 11px;
       border-radius: 4px;
     }
+    .stat-pill-box {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .stat-summary-card {
+      background: #f1f8e9;
+      border: 1px solid #c8e6c9;
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-summary-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1b5e20;
+    }
+    .stat-summary-lbl {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -469,7 +500,10 @@
   <div id="gameTab" class="tab-content active">
     <div class="timer-card">
       <div style="font-size: 13px; letter-spacing: 0.5px; opacity: 0.9;">
-        MATCH ROTATION TIMER — <span id="shiftIndicator">SHIFT 1</span>
+        <span id="shiftIndicator">SHIFT 1 OF 6</span> — <span id="rotationsCompletedText">0 rotations completed</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="rotationProgress"></div>
       </div>
       <div class="timer-display" id="timer">06:00</div>
       <div class="timer-controls">
@@ -545,9 +579,14 @@
       <div>
         <div class="action-banner">
           <div class="action-banner-text">Ready to make substitutions?</div>
-          <button class="warning" style="padding: 10px 18px; font-size: 15px;" onclick="confirmShiftAndAdvance()">
-            Rotate & Save Shift
-          </button>
+          <div style="display: flex; gap: 6px;">
+            <button class="warning" style="padding: 10px 14px; font-size: 14px;" onclick="confirmShiftAndAdvance()">
+              Rotate & Save Shift
+            </button>
+            <button class="secondary" style="padding: 10px 10px; font-size: 13px;" onclick="promptFinishMatch(true)">
+              End Match
+            </button>
+          </div>
         </div>
 
         <div class="subs-card">
@@ -558,7 +597,6 @@
         </div>
 
         <div class="card">
-          <!-- LIVE MATCH SCOREBOARD BANNER -->
           <div class="scoreboard-banner">
             <span>⚽ Team Match Goals</span>
             <span id="matchTotalGoals" style="font-size: 18px; color: #ffd54f;">0 Goals</span>
@@ -592,14 +630,36 @@
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
         <div>
-          <h3>Season Overview</h3>
-          <p style="font-size: 13px; color: #666; margin: 0;">Cumulative match time, goals, and position distribution.</p>
+          <h3>Team Record & Season Overview</h3>
+          <p style="font-size: 13px; color: #666; margin: 0;">Cumulative matches, goals, playing time, and position balance.</p>
         </div>
         <div style="display: flex; gap: 8px;">
           <button onclick="exportToCSV()">📥 Export to CSV</button>
           <button class="danger" onclick="resetSeason()">Reset Season Data</button>
         </div>
       </div>
+
+      <!-- Team Overview Totals -->
+      <div class="stat-pill-box" style="margin-top: 14px;">
+        <div class="stat-summary-card">
+          <div class="stat-summary-val" id="teamRecord">0 - 0 - 0</div>
+          <div class="stat-summary-lbl">Record (W-D-L)</div>
+        </div>
+        <div class="stat-summary-card">
+          <div class="stat-summary-val" id="teamTotalMatches">0</div>
+          <div class="stat-summary-lbl">Matches Played</div>
+        </div>
+        <div class="stat-summary-card">
+          <div class="stat-summary-val" id="teamTotalGoalsScored" style="color: #2e7d32;">0</div>
+          <div class="stat-summary-lbl">Goals Scored (GF)</div>
+        </div>
+        <div class="stat-summary-card">
+          <div class="stat-summary-val" id="teamTotalGoalsAgainst" style="color: #c62828;">0</div>
+          <div class="stat-summary-lbl">Goals Against (GA)</div>
+        </div>
+      </div>
+
+      <!-- Player Season Statistics Table -->
       <div style="overflow-x: auto; margin-top: 14px;">
         <table class="styled-table" style="min-width: 620px;">
           <thead>
@@ -621,6 +681,15 @@
       </div>
     </div>
 
+    <!-- Match History Log -->
+    <div class="card">
+      <h3>Season Match Log</h3>
+      <div id="matchLogContainer" style="font-size: 13px;">
+        <p style="color: #888;">No completed matches recorded yet.</p>
+      </div>
+    </div>
+
+    <!-- Manage Squad -->
     <div class="card">
       <h3>Manage Squad Roster</h3>
       <div class="add-bar">
@@ -633,7 +702,7 @@
           <tr>
             <th style="width: 54px;">#</th>
             <th>Name</th>
-            <th style="text-align: center; width: 80px;">Goals</th>
+            <th style="text-align: center; width: 80px;">Season Goals</th>
             <th style="text-align: right; width: 70px;">Action</th>
           </tr>
         </thead>
@@ -705,6 +774,7 @@
         document.getElementById('statsTab').classList.add('active');
         renderSeasonStats();
         renderManageRoster();
+        renderMatchHistory();
       }
     }
 
@@ -718,51 +788,57 @@
     }
 
     let timerInterval = null;
-    let timerState = safeLoad('soccer_timer_v12', {
+    let timerState = safeLoad('soccer_timer_v13', {
       running: false,
       remaining: 6 * 60,
       totalDuration: 6 * 60,
       lastTick: null,
-      shift: 1
+      shift: 1,
+      rotationsCompleted: 0
     });
-    let gameConfig = safeLoad('soccer_game_config_v12', {
+    let gameConfig = safeLoad('soccer_game_config_v13', {
       gameDuration: 40,
-      shiftDuration: 6
+      shiftDuration: 6,
+      suggestedShifts: 6
     });
-    let formation = safeLoad('soccer_formation_v12', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
-    let currentAssignment = safeLoad('soccer_current_assignment_v12', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
-    let previousAssignment = safeLoad('soccer_prev_assignment_v12', null);
+    let matchHistory = safeLoad('soccer_match_history_v13', []);
+    let formation = safeLoad('soccer_formation_v13', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
+    let currentAssignment = safeLoad('soccer_current_assignment_v13', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
+    let previousAssignment = safeLoad('soccer_prev_assignment_v13', null);
 
     let defaultPlayers = [
-      { id: 1, number: 7,  name: "Alex", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 2, number: 10, name: "Sam",  present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 3, number: 4,  name: "Liam", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 4, number: 9,  name: "Maya", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 5, number: 2,  name: "Noah", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 6, number: 8,  name: "Emma", present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 7, number: 11, name: "Leo",  present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
-      { id: 8, number: 5,  name: "Zoe",  present: true, goals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
+      { id: 1, number: 7,  name: "Alex", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 2, number: 10, name: "Sam",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 3, number: 4,  name: "Liam", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 4, number: 9,  name: "Maya", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 5, number: 2,  name: "Noah", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 6, number: 8,  name: "Emma", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 7, number: 11, name: "Leo",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
+      { id: 8, number: 5,  name: "Zoe",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
     ];
-    let players = safeLoad('soccer_squad_v12', defaultPlayers);
+    let players = safeLoad('soccer_squad_v13', defaultPlayers);
 
-    // Make sure each player has the goals field initialized
-    players.forEach(p => { if (typeof p.goals !== 'number') p.goals = 0; });
+    players.forEach(p => { 
+      if (typeof p.goals !== 'number') p.goals = 0; 
+      if (typeof p.matchGoals !== 'number') p.matchGoals = p.goals || 0;
+    });
 
     function saveAll() {
       try {
-        localStorage.setItem('soccer_squad_v12', JSON.stringify(players));
-        localStorage.setItem('soccer_timer_v12', JSON.stringify(timerState));
-        localStorage.setItem('soccer_current_assignment_v12', JSON.stringify(currentAssignment));
-        localStorage.setItem('soccer_prev_assignment_v12', JSON.stringify(previousAssignment));
-        localStorage.setItem('soccer_formation_v12', JSON.stringify(formation));
-        localStorage.setItem('soccer_game_config_v12', JSON.stringify(gameConfig));
+        localStorage.setItem('soccer_squad_v13', JSON.stringify(players));
+        localStorage.setItem('soccer_timer_v13', JSON.stringify(timerState));
+        localStorage.setItem('soccer_current_assignment_v13', JSON.stringify(currentAssignment));
+        localStorage.setItem('soccer_prev_assignment_v13', JSON.stringify(previousAssignment));
+        localStorage.setItem('soccer_formation_v13', JSON.stringify(formation));
+        localStorage.setItem('soccer_game_config_v13', JSON.stringify(gameConfig));
+        localStorage.setItem('soccer_match_history_v13', JSON.stringify(matchHistory));
       } catch (e) {}
     }
 
-    // Goal Logging Functionality
     function addGoal(id, delta = 1) {
       const p = players.find(x => x.id === id);
       if (p) {
+        p.matchGoals = Math.max(0, (p.matchGoals || 0) + delta);
         p.goals = Math.max(0, (p.goals || 0) + delta);
         saveAll();
         renderAttendanceTable();
@@ -773,9 +849,21 @@
     }
 
     function updateScoreboard() {
-      const totalGoals = players.reduce((sum, p) => sum + (p.goals || 0), 0);
+      const currentMatchGoals = players.reduce((sum, p) => sum + (p.matchGoals || 0), 0);
       const scoreEl = document.getElementById('matchTotalGoals');
-      if (scoreEl) scoreEl.innerText = `${totalGoals} ${totalGoals === 1 ? 'Goal' : 'Goals'}`;
+      if (scoreEl) scoreEl.innerText = `${currentMatchGoals} ${currentMatchGoals === 1 ? 'Goal' : 'Goals'}`;
+    }
+
+    function updateRotationDisplay() {
+      const totalSuggested = gameConfig.suggestedShifts || 6;
+      const completed = timerState.rotationsCompleted || 0;
+      const currentShift = timerState.shift || 1;
+
+      document.getElementById('shiftIndicator').innerText = `SHIFT ${currentShift} OF ${totalSuggested}`;
+      document.getElementById('rotationsCompletedText').innerText = `${completed} rotation${completed === 1 ? '' : 's'} completed`;
+
+      const pct = Math.min(100, Math.round((completed / Math.max(1, totalSuggested - 1)) * 100));
+      document.getElementById('rotationProgress').style.width = `${pct}%`;
     }
 
     function calculateFairPlay() {
@@ -798,6 +886,7 @@
 
       if (attending <= fieldSpots) {
         gameConfig.shiftDuration = gameMins;
+        gameConfig.suggestedShifts = 1;
         banner.innerHTML = `<b>No bench needed!</b> ${attending} players for ${fieldSpots} field slots.<br>Everyone plays all <b>${gameMins} minutes</b>.`;
       } else {
         const totalPlayerMinutes = gameMins * fieldSpots;
@@ -805,9 +894,11 @@
         let bestShifts = Math.round(gameMins / 6);
         if (bestShifts < 4) bestShifts = 4;
         let shiftMinutes = (gameMins / bestShifts).toFixed(1);
-        gameConfig.shiftDuration = parseFloat(shiftMinutes);
 
-        banner.innerHTML = `👥 <b>${attending} present</b> | <b>${fieldSpots} field slots</b>.<br>⏱ Target: <b>${fairTimePerPlayer} mins</b> per player.<br>🔄 <b>${bestShifts} rotations</b> of <b>~${shiftMinutes} min</b> each.`;
+        gameConfig.shiftDuration = parseFloat(shiftMinutes);
+        gameConfig.suggestedShifts = bestShifts;
+
+        banner.innerHTML = `👥 <b>${attending} present</b> | <b>${fieldSpots} field slots</b>.<br>⏱ Target: <b>${fairTimePerPlayer} mins</b> per player.<br>🔄 <b>${bestShifts} shifts</b> (~${shiftMinutes} min each).`;
 
         if (!timerState.running) {
           timerState.totalDuration = Math.round(parseFloat(shiftMinutes) * 60);
@@ -815,6 +906,7 @@
           updateTimerDisplay();
         }
       }
+      updateRotationDisplay();
       saveAll();
     }
 
@@ -826,7 +918,7 @@
         timerState.lastTick = now;
       }
       updateTimerDisplay();
-      document.getElementById('shiftIndicator').innerText = `SHIFT ${timerState.shift}`;
+      updateRotationDisplay();
       document.getElementById('gameDurationSelect').value = gameConfig.gameDuration;
 
       if ("Notification" in window && Notification.permission === "granted") {
@@ -894,7 +986,6 @@
       updateTimerDisplay();
     }
 
-    // Unified Player Management
     function addPlayerFromTab(numInputId, nameInputId) {
       const nameInput = document.getElementById(nameInputId);
       const numInput = document.getElementById(numInputId);
@@ -911,6 +1002,7 @@
         name: name,
         present: true,
         goals: 0,
+        matchGoals: 0,
         stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 }
       });
 
@@ -979,7 +1071,7 @@
           <td style="text-align: center;">
             <div class="goal-stepper">
               <button class="secondary btn-goal-mini" onclick="addGoal(${p.id}, -1)">-</button>
-              <span style="font-weight: 800; min-width: 14px; text-align: center;">${p.goals || 0}</span>
+              <span style="font-weight: 800; min-width: 14px; text-align: center;">${p.matchGoals || 0}</span>
               <button class="warning btn-goal-mini" onclick="addGoal(${p.id}, 1)">⚽</button>
             </div>
           </td>
@@ -1027,6 +1119,58 @@
           <td style="text-align: center;"><span class="num-pill">${p.stats.FWD}</span></td>
         </tr>
       `).join('');
+
+      renderMatchHistory();
+    }
+
+    function renderMatchHistory() {
+      let totalW = 0, totalD = 0, totalL = 0, totalGF = 0, totalGA = 0;
+
+      matchHistory.forEach(m => {
+        totalGF += m.ourGoals;
+        totalGA += m.oppGoals;
+        if (m.result === 'W') totalW++;
+        else if (m.result === 'D') totalD++;
+        else if (m.result === 'L') totalL++;
+      });
+
+      document.getElementById('teamRecord').innerText = `${totalW} - ${totalD} - ${totalL}`;
+      document.getElementById('teamTotalMatches').innerText = matchHistory.length;
+      document.getElementById('teamTotalGoalsScored').innerText = totalGF;
+      document.getElementById('teamTotalGoalsAgainst').innerText = totalGA;
+
+      const container = document.getElementById('matchLogContainer');
+      if (matchHistory.length === 0) {
+        container.innerHTML = `<p style="color: #888;">No completed matches recorded yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th style="text-align: center;">Result</th>
+              <th style="text-align: center;">Score</th>
+              <th style="text-align: right;">Opponent</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${matchHistory.map(m => `
+              <tr>
+                <td style="color: #666;">${m.date}</td>
+                <td style="text-align: center;">
+                  <b style="color: ${m.result === 'W' ? '#2e7d32' : (m.result === 'D' ? '#ef6c00' : '#c62828')}">
+                    ${m.result}
+                  </b>
+                </td>
+                <td style="text-align: center; font-weight: bold;">${m.ourGoals} -${m.oppGoals}</td>
+                <td style="text-align: right; color: #555;">${m.opponent || 'Opponent'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
     }
 
     function generateLineup() {
@@ -1148,7 +1292,7 @@
         const container = document.getElementById(containerId);
         container.innerHTML = (playerList || []).map(p => {
           const livePlayer = players.find(x => x.id === p.id) || p;
-          const goalTally = livePlayer.goals || 0;
+          const goalTally = livePlayer.matchGoals || 0;
           return `
             <div class="pitch-player ${isGk ? 'gk-token' : ''}">
               <div class="pitch-circle">
@@ -1182,7 +1326,7 @@
             <div class="bench-player-pill">
               <span class="bench-number">#${livePlayer.number}</span>
               <span class="bench-name">${livePlayer.name}</span>
-              ${(livePlayer.goals || 0) > 0 ? `<span style="font-size:11px; font-weight:bold;">(${livePlayer.goals}⚽)</span>` : ''}
+              ${(livePlayer.matchGoals || 0) > 0 ? `<span style="font-size:11px; font-weight:bold;">(${livePlayer.matchGoals}⚽)</span>` : ''}
             </div>
           `;
         }).join('');
@@ -1214,19 +1358,75 @@
       });
 
       timerState.shift++;
-      document.getElementById('shiftIndicator').innerText = `SHIFT ${timerState.shift}`;
+      timerState.rotationsCompleted = (timerState.rotationsCompleted || 0) + 1;
       resetTimer();
       saveAll();
       renderAttendanceTable();
-      generateLineup();
+      updateRotationDisplay();
+
+      const suggested = gameConfig.suggestedShifts || 6;
+      if (timerState.shift > suggested) {
+        promptFinishMatch(false);
+      } else {
+        generateLineup();
+      }
+    }
+
+    function promptFinishMatch(manual = false) {
+      const totalTeamGoals = players.reduce((sum, p) => sum + (p.matchGoals || 0), 0);
+      const msg = manual 
+        ? "Do you want to conclude the match now and record final stats?" 
+        : `All suggested ${gameConfig.suggestedShifts} shifts have been played! Is the match finished?`;
+
+      if (confirm(msg)) {
+        let oppGoalsInput = prompt(`Final Whistle!\nYour Team Scored: ${totalTeamGoals} goals.\n\nEnter Opponent's final score:`, "0");
+        if (oppGoalsInput === null) return;
+
+        let oppGoals = parseInt(oppGoalsInput) || 0;
+        let result = totalTeamGoals > oppGoals ? 'W' : (totalTeamGoals === oppGoals ? 'D' : 'L');
+        let oppName = prompt("Opponent team name (optional):", "Opponent") || "Opponent";
+
+        matchHistory.push({
+          id: Date.now(),
+          date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+          ourGoals: totalTeamGoals,
+          oppGoals: oppGoals,
+          result: result,
+          opponent: oppName
+        });
+
+        // Reset match-level goals and rotation counters for the next game
+        players.forEach(p => { p.matchGoals = 0; });
+        timerState.shift = 1;
+        timerState.rotationsCompleted = 0;
+        currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
+        previousAssignment = null;
+
+        saveAll();
+        renderAttendanceTable();
+        renderPitch();
+        renderSeasonStats();
+        updateRotationDisplay();
+        updateScoreboard();
+
+        alert(`Match recorded! Result: ${result} (${totalTeamGoals} - ${oppGoals}). Stats saved to Season Record.`);
+        switchTab('statsTab');
+      } else {
+        generateLineup();
+      }
     }
 
     function exportToCSV() {
-      let csv = "Number,Name,Goals,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD\n";
+      let csv = "Number,Name,Season Goals,Estimated Minutes,Shifts On Field,Bench Shifts,GK,DEF,MID,FWD\n";
       players.forEach(p => {
         const estMins = p.stats.totalMinutes || (p.stats.totalPlayed * (gameConfig.shiftDuration || 6)).toFixed(0);
         csv += `"${p.number}","${p.name}",${p.goals || 0},${estMins},${p.stats.totalPlayed},${p.stats.BENCH},${p.stats.GK},${p.stats.DEF},${p.stats.MID},${p.stats.FWD}\n`;
       });
+      csv += "\nMatch History\nDate,Result,Team Goals,Opponent Goals,Opponent Name\n";
+      matchHistory.forEach(m => {
+        csv += `"${m.date}","${m.result}",${m.ourGoals},${m.oppGoals},"${m.opponent}"\n`;
+      });
+
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -1238,13 +1438,15 @@
     }
 
     function resetSeason() {
-      if (confirm("Reset ALL player stats, goals, and shift counts to zero?")) {
+      if (confirm("Reset ALL player stats, goals, match histories, and shift counts to zero?")) {
         players.forEach(p => {
           p.goals = 0;
+          p.matchGoals = 0;
           p.stats = { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 };
         });
         timerState.shift = 1;
-        document.getElementById('shiftIndicator').innerText = `SHIFT 1`;
+        timerState.rotationsCompleted = 0;
+        matchHistory = [];
         currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
         previousAssignment = null;
         resetTimer();
@@ -1254,10 +1456,10 @@
         renderPitch();
         renderSubstitutionCallout();
         updateScoreboard();
+        updateRotationDisplay();
       }
     }
 
-    // Initialize UI
     document.getElementById('numGK').value = formation.GK;
     document.getElementById('numDEF').value = formation.DEF;
     document.getElementById('numMID').value = formation.MID;
@@ -1269,6 +1471,7 @@
     renderSubstitutionCallout();
     calculateFairPlay();
     updateScoreboard();
+    renderSeasonStats();
   </script>
 </body>
 </html>
