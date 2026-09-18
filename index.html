@@ -134,6 +134,12 @@
       font-weight: 600;
     }
     button:active { opacity: 0.8; }
+    button:disabled {
+      background-color: #bdbdbd !important;
+      color: #757575 !important;
+      cursor: not-allowed !important;
+      opacity: 0.7;
+    }
     button.secondary { background-color: #546e7a; }
     button.warning { background-color: var(--warning); }
     button.danger { background-color: var(--danger); }
@@ -559,14 +565,14 @@
     </div>
 
     <div class="container">
-      <!-- Left Column: Attendance & Quick Lineup Generator -->
+      <!-- Left: Match Attendance & Manual Trigger -->
       <div>
         <div class="card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <h3>Match Attendance</h3>
             <button class="secondary" style="padding: 4px 8px; font-size: 11px;" onclick="switchTab('setupTab')">⚙️ Edit Squad</button>
           </div>
-          <p style="font-size: 12px; color: #666; margin-top: -4px;">Check who is present today. Tap ⚽ to add a match goal.</p>
+          <p style="font-size: 12px; color: #666; margin-top: -4px;">Check attending players. Tap ⚽ to log a goal.</p>
 
           <table class="styled-table">
             <thead>
@@ -580,14 +586,14 @@
             </thead>
             <tbody id="attendanceTableBody"></tbody>
           </table>
-          <button class="huge" style="margin-top: 14px;" onclick="generateLineup()">⚡ Generate Next Lineup</button>
+          <button class="huge" id="btnGenerateLineup" style="margin-top: 14px;" onclick="generateLineup()">⚡ Generate Next Lineup</button>
         </div>
       </div>
 
-      <!-- Right Column: Sub Callouts, Pitch, Dugout -->
+      <!-- Right: Action Bar, Callouts, Pitch, Dugout -->
       <div>
         <div class="action-banner">
-          <div class="action-banner-text">Ready to make substitutions?</div>
+          <div class="action-banner-text">Ready to rotate shifts?</div>
           <div style="display: flex; gap: 6px;">
             <button class="warning" style="padding: 10px 14px; font-size: 14px;" onclick="confirmShiftAndAdvance()">
               Rotate & Save Shift
@@ -601,7 +607,7 @@
         <div class="subs-card">
           <div class="subs-title">🔄 Substitution Callout (Who's Coming In & Out)</div>
           <div id="subsContainer">
-            <p style="color: #666; font-size: 13px; margin: 4px 0;">Tap "Generate Next Lineup" to see player substitutions.</p>
+            <p style="color: #666; font-size: 13px; margin: 4px 0;">Lineups update automatically when timer finishes or shift rotates.</p>
           </div>
         </div>
 
@@ -698,11 +704,13 @@
 
   <!-- ==================== TAB 3: SETUP ==================== -->
   <div id="setupTab" class="tab-content">
-    <!-- Match Time & Formation Setup -->
     <div class="card">
       <h3>Match Time & Formation Setup</h3>
       <label style="font-size: 13px; font-weight: bold;">Total Game Duration (Minutes):</label>
       <select id="gameDurationSelect" onchange="calculateFairPlay()" style="width: 100%; margin-top: 4px; margin-bottom: 10px;">
+        <option value="5">5 minutes</option>
+        <option value="10">10 minutes</option>
+        <option value="15">15 minutes</option>
         <option value="20">20 minutes</option>
         <option value="25">25 minutes</option>
         <option value="30">30 minutes</option>
@@ -727,10 +735,9 @@
       <div class="calc-banner" id="calcOutput">Calculating fair rotation...</div>
     </div>
 
-    <!-- Squad Roster List & Editing -->
     <div class="card">
       <h3>Squad Roster Management</h3>
-      <p style="font-size: 12px; color: #666; margin-top: -6px;">Add players and customize jersey numbers or names. Saves automatically.</p>
+      <p style="font-size: 12px; color: #666; margin-top: -6px;">Add players and customize jersey numbers or names.</p>
       
       <div class="add-bar">
         <input type="number" id="setupNewNum" placeholder="#" style="width: 55px;" />
@@ -751,7 +758,6 @@
       </table>
     </div>
 
-    <!-- Buzzer & Alert Controls -->
     <div class="card">
       <h3>Buzzer & Sound Settings</h3>
       <p style="font-size: 13px; color: #666; margin-top: -6px;">Customize sideline alerts and alarm behaviors.</p>
@@ -813,7 +819,7 @@
       }
     }
 
-    let appSettings = safeLoad('soccer_settings_v15', {
+    let appSettings = safeLoad('soccer_settings_v17', {
       soundType: 'whistle',
       continuousAlarm: false,
       volume: 0.7
@@ -826,7 +832,7 @@
       appSettings.continuousAlarm = document.getElementById('continuousAlarmToggle').checked;
       appSettings.volume = parseFloat(document.getElementById('volumeSlider').value);
       document.getElementById('volumeLabel').innerText = `${Math.round(appSettings.volume * 100)}%`;
-      localStorage.setItem('soccer_settings_v15', JSON.stringify(appSettings));
+      localStorage.setItem('soccer_settings_v17', JSON.stringify(appSettings));
     }
 
     function initSettingsUI() {
@@ -997,23 +1003,24 @@
     }
 
     let timerInterval = null;
-    let timerState = safeLoad('soccer_timer_v15', {
+    let timerState = safeLoad('soccer_timer_v17', {
       running: false,
       remaining: 6 * 60,
       totalDuration: 6 * 60,
       lastTick: null,
       shift: 1,
-      rotationsCompleted: 0
+      rotationsCompleted: 0,
+      matchActive: false
     });
-    let gameConfig = safeLoad('soccer_game_config_v15', {
+    let gameConfig = safeLoad('soccer_game_config_v17', {
       gameDuration: 40,
       shiftDuration: 6,
       suggestedShifts: 6
     });
-    let matchHistory = safeLoad('soccer_match_history_v15', []);
-    let formation = safeLoad('soccer_formation_v15', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
-    let currentAssignment = safeLoad('soccer_current_assignment_v15', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
-    let previousAssignment = safeLoad('soccer_prev_assignment_v15', null);
+    let matchHistory = safeLoad('soccer_match_history_v17', []);
+    let formation = safeLoad('soccer_formation_v17', { GK: 1, DEF: 2, MID: 2, FWD: 2 });
+    let currentAssignment = safeLoad('soccer_current_assignment_v17', { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] });
+    let previousAssignment = safeLoad('soccer_prev_assignment_v17', null);
 
     let defaultPlayers = [
       { id: 1, number: 7,  name: "Alex", present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
@@ -1025,7 +1032,7 @@
       { id: 7, number: 11, name: "Leo",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } },
       { id: 8, number: 5,  name: "Zoe",  present: true, goals: 0, matchGoals: 0, stats: { GK: 0, DEF: 0, MID: 0, FWD: 0, BENCH: 0, totalPlayed: 0, totalMinutes: 0 } }
     ];
-    let players = safeLoad('soccer_squad_v15', defaultPlayers);
+    let players = safeLoad('soccer_squad_v17', defaultPlayers);
 
     players.forEach(p => { 
       if (typeof p.goals !== 'number') p.goals = 0; 
@@ -1034,14 +1041,26 @@
 
     function saveAll() {
       try {
-        localStorage.setItem('soccer_squad_v15', JSON.stringify(players));
-        localStorage.setItem('soccer_timer_v15', JSON.stringify(timerState));
-        localStorage.setItem('soccer_current_assignment_v15', JSON.stringify(currentAssignment));
-        localStorage.setItem('soccer_prev_assignment_v15', JSON.stringify(previousAssignment));
-        localStorage.setItem('soccer_formation_v15', JSON.stringify(formation));
-        localStorage.setItem('soccer_game_config_v15', JSON.stringify(gameConfig));
-        localStorage.setItem('soccer_match_history_v15', JSON.stringify(matchHistory));
+        localStorage.setItem('soccer_squad_v17', JSON.stringify(players));
+        localStorage.setItem('soccer_timer_v17', JSON.stringify(timerState));
+        localStorage.setItem('soccer_current_assignment_v17', JSON.stringify(currentAssignment));
+        localStorage.setItem('soccer_prev_assignment_v17', JSON.stringify(previousAssignment));
+        localStorage.setItem('soccer_formation_v17', JSON.stringify(formation));
+        localStorage.setItem('soccer_game_config_v17', JSON.stringify(gameConfig));
+        localStorage.setItem('soccer_match_history_v17', JSON.stringify(matchHistory));
       } catch (e) {}
+    }
+
+    function updateGenerateButtonState() {
+      const btn = document.getElementById('btnGenerateLineup');
+      if (!btn) return;
+      if (timerState.matchActive) {
+        btn.disabled = true;
+        btn.innerText = "✓ Lineup Active (Auto-Rotating)";
+      } else {
+        btn.disabled = false;
+        btn.innerText = "⚡ Generate Next Lineup";
+      }
     }
 
     function addGoal(id, delta = 1) {
@@ -1100,16 +1119,24 @@
       } else {
         const totalPlayerMinutes = gameMins * fieldSpots;
         const fairTimePerPlayer = (totalPlayerMinutes / attending).toFixed(1);
-        let bestShifts = Math.round(gameMins / 6);
-        if (bestShifts < 4) bestShifts = 4;
-        let shiftMinutes = (gameMins / bestShifts).toFixed(1);
+        
+        let bestShifts;
+        if (gameMins <= 10) {
+          bestShifts = 2;
+        } else if (gameMins <= 15) {
+          bestShifts = 3;
+        } else {
+          bestShifts = Math.round(gameMins / 6);
+          if (bestShifts < 4) bestShifts = 4;
+        }
 
+        let shiftMinutes = (gameMins / bestShifts).toFixed(1);
         gameConfig.shiftDuration = parseFloat(shiftMinutes);
         gameConfig.suggestedShifts = bestShifts;
 
         banner.innerHTML = `👥 <b>${attending} present</b> | <b>${fieldSpots} field slots</b>.<br>⏱ Target: <b>${fairTimePerPlayer} mins</b> per player.<br>🔄 <b>${bestShifts} shifts</b> (~${shiftMinutes} min each).`;
 
-        if (!timerState.running) {
+        if (!timerState.running && !timerState.matchActive) {
           timerState.totalDuration = Math.round(parseFloat(shiftMinutes) * 60);
           timerState.remaining = timerState.totalDuration;
           updateTimerDisplay();
@@ -1128,6 +1155,7 @@
       }
       updateTimerDisplay();
       updateRotationDisplay();
+      updateGenerateButtonState();
       document.getElementById('gameDurationSelect').value = gameConfig.gameDuration;
 
       if ("Notification" in window && Notification.permission === "granted") {
@@ -1164,9 +1192,12 @@
           if (timerState.remaining === 0) {
             pauseTimer();
             triggerShiftAlarm();
-            sendWatchNotification("⏰ Shift Ended!", "Time to rotate players on the field.");
+            sendWatchNotification("⏰ Shift Ended!", "Substitutions are ready on screen.");
+            
+            generateLineupInternal();
+
             if (!appSettings.continuousAlarm) {
-              alert("⏰ Shift completed! Time for substitutions.");
+              alert("⏰ Shift completed! Substitution callouts are ready on screen.");
             }
           }
         }
@@ -1385,7 +1416,15 @@
       `;
     }
 
+    // LINEUP & SUBSTITUTION CALLOUT ENGINE
     function generateLineup() {
+      generateLineupInternal();
+      timerState.matchActive = true;
+      updateGenerateButtonState();
+      saveAll();
+    }
+
+    function generateLineupInternal() {
       const available = players.filter(p => p.present);
       if (available.length === 0) {
         alert("Mark players as attending before generating lineup!");
@@ -1462,7 +1501,7 @@
       if (goingOut.length === 0 && comingIn.length === 0) {
         container.innerHTML = `
           <div style="background: white; padding: 8px; border-radius: 6px; font-size: 13px; color: #555;">
-            No substitutions this shift (all players stay in current status).
+            No substitutions needed for this rotation (all players stay on pitch/bench).
           </div>
         `;
         return;
@@ -1546,6 +1585,7 @@
       updateScoreboard();
     }
 
+    // ADVANCE SHIFT & RE-TRIGGER ROTATION
     function confirmShiftAndAdvance() {
       const hasFieldPlayers = ['GK', 'DEF', 'MID', 'FWD'].some(pos => currentAssignment[pos]?.length > 0);
       if (!hasFieldPlayers) {
@@ -1582,7 +1622,7 @@
       if (timerState.shift > suggested) {
         promptFinishMatch(false);
       } else {
-        generateLineup();
+        generateLineupInternal();
       }
     }
 
@@ -1613,6 +1653,7 @@
         players.forEach(p => { p.matchGoals = 0; });
         timerState.shift = 1;
         timerState.rotationsCompleted = 0;
+        timerState.matchActive = false;
         currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
         previousAssignment = null;
 
@@ -1622,11 +1663,12 @@
         renderSeasonStats();
         updateRotationDisplay();
         updateScoreboard();
+        updateGenerateButtonState();
 
         alert(`Match recorded! Result: ${result} (${totalTeamGoals} - ${oppGoals}). Stats saved to Season Record.`);
         switchTab('statsTab');
       } else {
-        generateLineup();
+        generateLineupInternal();
       }
     }
 
@@ -1660,6 +1702,7 @@
         });
         timerState.shift = 1;
         timerState.rotationsCompleted = 0;
+        timerState.matchActive = false;
         matchHistory = [];
         currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
         previousAssignment = null;
@@ -1672,10 +1715,11 @@
         renderSubstitutionCallout();
         updateScoreboard();
         updateRotationDisplay();
+        updateGenerateButtonState();
       }
     }
 
-    // Initialize UI Elements
+    // INITIALIZATION
     document.getElementById('numGK').value = formation.GK;
     document.getElementById('numDEF').value = formation.DEF;
     document.getElementById('numMID').value = formation.MID;
