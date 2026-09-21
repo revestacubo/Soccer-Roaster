@@ -21,7 +21,6 @@
       --border-color: #e0e0e0;
     }
 
-    /* High-Contrast Direct Sunlight Mode */
     body.sunlight-mode {
       --primary: #000000;
       --pitch-bg: #2e7d32;
@@ -60,7 +59,6 @@
     }
     h1, h2, h3 { margin: 0 0 10px 0; }
 
-    /* Header */
     .team-header {
       display: flex;
       justify-content: space-between;
@@ -176,7 +174,7 @@
       transition: width 0.3s ease;
     }
 
-    /* Balance Calculation Bar */
+    /* Balance Calculation Bar Below Timer */
     .timer-balance-bar {
       background: rgba(0, 0, 0, 0.28);
       border: 1px solid rgba(255, 255, 255, 0.25);
@@ -206,6 +204,43 @@
       background: #ff9800;
       color: #212121;
       font-weight: bold;
+    }
+    .balance-chip.bad {
+      background: #d32f2f;
+      color: white;
+      font-weight: bold;
+    }
+
+    /* Sideline Prep Warning Prompt */
+    .prep-warning-banner {
+      display: none;
+      background: #fff3e0;
+      border: 2px solid #ff9800;
+      color: #b26a00;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: bold;
+      animation: pulseAlert 1.2s infinite alternate;
+    }
+
+    /* Pre-Game Inequality Warning Banner */
+    .inequality-alert-banner {
+      display: none;
+      background: #ffebee;
+      border-left: 5px solid #d32f2f;
+      color: #b71c1c;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .inequality-alert-banner.balanced {
+      background: #e8f5e9;
+      border-left-color: #2e7d32;
+      color: #1b5e20;
     }
 
     .calc-banner {
@@ -400,7 +435,7 @@
       border-color: #b71c1c;
     }
 
-    /* Live Opponent Scoreboard Banner (B3) */
+    /* Live Scoreboard Banner */
     .scoreboard-banner {
       background: #212121;
       color: white;
@@ -551,6 +586,51 @@
       border-radius: 6px;
     }
 
+    /* Lookahead Queue Cards */
+    .preview-queue-card {
+      background: #fafafa;
+      border: 1px solid #cfd8dc;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 14px;
+    }
+    .preview-queue-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #37474f;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .preview-shift-block {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    .preview-pill-field {
+      display: inline-block;
+      background: #e8f5e9;
+      color: #1b5e20;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin: 2px;
+    }
+    .preview-pill-bench {
+      display: inline-block;
+      background: #fff3e0;
+      color: #e65100;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin: 2px;
+    }
+
     .styled-table {
       width: 100%;
       border-collapse: collapse;
@@ -679,7 +759,6 @@
       margin-top: 2px;
     }
 
-    /* Modal Styling */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -732,6 +811,11 @@
     <button class="alarm-ack-btn" onclick="acknowledgeAlarm()">🛑 Acknowledge & Stop Alarm</button>
   </div>
 
+  <!-- SIDELINE PREP WARNING PROMPT (CONFIGURABLE SECONDS BEFORE SHIFT) -->
+  <div class="prep-warning-banner" id="prepWarningBanner">
+    <span>⏱ <b>GET SUBS READY:</b> <span id="prepWarningText">Shift ending soon.</span></span>
+  </div>
+
   <!-- HIDDEN FILE INPUT FOR IMPORTING CSV -->
   <input type="file" id="csvFileInput" accept=".csv" style="display: none;" onchange="handleCSVFileSelect(event)">
 
@@ -764,7 +848,7 @@
     </div>
   </div>
 
-  <!-- HALFTIME BREAK MODAL (B1) -->
+  <!-- HALFTIME BREAK MODAL -->
   <div class="modal-overlay" id="halftimeModal">
     <div class="modal-card" style="text-align: center;">
       <h2 style="margin-top: 0; color: var(--primary);">⏸ Halftime Interval</h2>
@@ -816,19 +900,19 @@
       </div>
     </div>
 
-    <!-- TAP TO SWAP ACTIVE HINT (A3) -->
+    <!-- TAP TO SWAP ACTIVE HINT -->
     <div class="swap-hint-banner" id="swapHintBanner">
       ⚡ Tap another player token to swap positions!
       <button onclick="cancelManualSwap()" style="padding: 2px 6px; font-size: 10px; margin-left: 8px;">Cancel</button>
     </div>
 
     <div class="container">
-      <!-- Left: Match Attendance & Lineup Generation -->
+      <!-- Left: Match Attendance & Pre-Game Balance Warning -->
       <div>
         <div class="card">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <h3>Match Attendance</h3>
-            <button class="secondary" style="padding: 4px 8px; font-size: 11px;" onclick="switchTab('setupTab')">⚙️ Edit Squad</button>
+            <button class="secondary" style="padding: 4px 8px; font-size: 11px;" onclick="switchTab('setupTab')">⚙️ Match Setup</button>
           </div>
           <p style="font-size: 12px; color: #666; margin-top: -4px;">Check attending players. Tap ⚽ for goals, 🩹 to sub.</p>
 
@@ -845,11 +929,15 @@
             </thead>
             <tbody id="attendanceTableBody"></tbody>
           </table>
+
+          <!-- PRE-GAME INEQUALITY FORECAST WARNING BANNER -->
+          <div class="inequality-alert-banner" id="inequalityAlertBanner"></div>
+
           <button class="huge" id="btnGenerateLineup" style="margin-top: 14px;" onclick="generateLineup()">⚡ Generate Next Lineup</button>
         </div>
       </div>
 
-      <!-- Right: Action Bar, Callouts, Pitch, Dugout -->
+      <!-- Right: Action Bar, Callouts, Pitch, Dugout & Next 2 Rotations Lookahead -->
       <div>
         <div class="action-banner">
           <div class="action-banner-text">Ready to rotate shifts?</div>
@@ -874,7 +962,7 @@
         </div>
 
         <div class="card">
-          <!-- LIVE OPPONENT SCOREBOARD (B3) -->
+          <!-- LIVE OPPONENT SCOREBOARD -->
           <div class="scoreboard-banner">
             <div class="score-side">
               <span id="scoreTeamNameLabel" style="font-size: 13px;">Us</span>
@@ -894,7 +982,7 @@
             <span style="font-size: 11px; color: #777;">(Tap any player to swap)</span>
           </div>
 
-          <!-- PITCH CANVAS (A3 Tap-to-Swap) -->
+          <!-- PITCH CANVAS -->
           <div class="pitch-container" id="pitch">
             <div class="pitch-line-row" id="pitchFWD"></div>
             <div class="pitch-line-row" id="pitchMID"></div>
@@ -910,6 +998,18 @@
             </div>
             <div class="bench-grid" id="benchContainer">
               <span style="font-size: 13px; color: #888;">No players on bench.</span>
+            </div>
+          </div>
+
+          <!-- UPCOMING ROTATIONS LOOKAHEAD (NEXT 2 SHIFTS IN ADVANCE) -->
+          <div class="preview-queue-card">
+            <div class="preview-queue-title" onclick="toggleUpcomingPreview()">
+              <span>🔮 Upcoming Rotations (Next 2 Shifts in Advance)</span>
+              <span id="previewToggleIcon">▼</span>
+            </div>
+            <div id="previewQueueContent" style="display: block;">
+              <div id="previewShiftNext"></div>
+              <div id="previewShiftAfter"></div>
             </div>
           </div>
         </div>
@@ -982,10 +1082,10 @@
 
   <!-- ==================== TAB 3: SETUP ==================== -->
   <div id="setupTab" class="tab-content">
-    <!-- MULTI-TEAM / SQUAD SWITCHER (C3) -->
+    <!-- MULTI-TEAM SQUAD SWITCHER -->
     <div class="card">
       <h3>Multi-Team / Squad Switcher</h3>
-      <p style="font-size: 12px; color: #666; margin-top: -6px;">Switch between your squads (e.g., U8, U10). Data is saved separately.</p>
+      <p style="font-size: 12px; color: #666; margin-top: -6px;">Switch between squads (e.g., U8, U10). Data is saved separately.</p>
       <div style="display: flex; gap: 8px; align-items: center;">
         <select id="squadSelector" onchange="switchActiveSquad(this.value)" style="flex: 1; font-weight: bold;"></select>
         <button class="secondary" onclick="createNewSquad()">+ New Squad</button>
@@ -997,27 +1097,57 @@
       </div>
     </div>
 
-    <!-- Match Time & Formation -->
+    <!-- MATCH TIMING, TIME BETWEEN CHANGES & SCHEDULE MODES -->
     <div class="card">
-      <h3>Match Time & Formation Setup</h3>
-      <label style="font-size: 13px; font-weight: bold;">Total Game Duration (Minutes):</label>
-      <select id="gameDurationSelect" onchange="calculateFairPlay()" style="width: 100%; margin-top: 4px; margin-bottom: 10px;">
-        <option value="5">5 minutes</option>
-        <option value="10">10 minutes</option>
-        <option value="15">15 minutes</option>
-        <option value="20">20 minutes</option>
-        <option value="25">25 minutes</option>
-        <option value="30">30 minutes</option>
-        <option value="35">35 minutes</option>
-        <option value="40" selected>40 minutes</option>
-        <option value="45">45 minutes</option>
-        <option value="50">50 minutes</option>
-        <option value="55">55 minutes</option>
-        <option value="60">60 minutes</option>
-        <option value="70">70 minutes</option>
-        <option value="80">80 minutes</option>
-        <option value="90">90 minutes</option>
-      </select>
+      <h3>Match Time & Rotation Schedule</h3>
+      <p style="font-size: 12px; color: #666; margin-top: -6px;">Configure match duration and time between substitutions.</p>
+
+      <div class="setting-row">
+        <div>
+          <b>Rotation Schedule Mode</b>
+          <div class="setting-desc">Auto-calculate equal shifts or specify exact shift length.</div>
+        </div>
+        <div>
+          <select id="scheduleModeSelect" onchange="toggleScheduleMode(this.value)" style="font-weight: bold;">
+            <option value="auto">Auto-Calculate (Equal Play)</option>
+            <option value="custom">Custom Schedule</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="autoScheduleControls">
+        <label style="font-size: 13px; font-weight: bold;">Total Game Duration (Minutes):</label>
+        <select id="gameDurationSelect" onchange="calculateFairPlay()" style="width: 100%; margin-top: 4px; margin-bottom: 10px;">
+          <option value="5">5 minutes</option>
+          <option value="10">10 minutes</option>
+          <option value="15">15 minutes</option>
+          <option value="20">20 minutes</option>
+          <option value="25">25 minutes</option>
+          <option value="30">30 minutes</option>
+          <option value="35">35 minutes</option>
+          <option value="40" selected>40 minutes</option>
+          <option value="45">45 minutes</option>
+          <option value="50">50 minutes</option>
+          <option value="55">55 minutes</option>
+          <option value="60">60 minutes</option>
+          <option value="70">70 minutes</option>
+          <option value="80">80 minutes</option>
+          <option value="90">90 minutes</option>
+        </select>
+      </div>
+
+      <div id="customScheduleControls" style="display: none; background: #f9fbe7; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #dce775;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Time Between Changes (Mins):</label>
+            <input type="number" id="customShiftMins" min="1" max="45" value="6" step="0.5" style="width: 100%; margin-top: 4px;" onchange="calculateFairPlay()">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Number of Changes / Shifts:</label>
+            <input type="number" id="customShiftCount" min="2" max="20" value="6" style="width: 100%; margin-top: 4px;" onchange="calculateFairPlay()">
+          </div>
+        </div>
+      </div>
 
       <div style="font-size: 13px; font-weight: bold; margin-bottom: 4px;">Formation Slots on Field:</div>
       <div class="formation-inputs">
@@ -1026,13 +1156,17 @@
         <div>MID<input type="number" id="numMID" value="2" min="0" max="6" onchange="calculateFairPlay()" /></div>
         <div>FWD<input type="number" id="numFWD" value="2" min="0" max="6" onchange="calculateFairPlay()" /></div>
       </div>
+
       <div class="calc-banner" id="calcOutput">Calculating fair rotation...</div>
+      
+      <!-- PRE-MATCH INEQUALITY ASSESSMENT IN SETUP -->
+      <div class="inequality-alert-banner" id="setupInequalityBanner"></div>
     </div>
 
-    <!-- SQUAD ROSTER MANAGEMENT (WITH A1 GK RULES & A2 PREFERRED POSITIONS) -->
+    <!-- SQUAD ROSTER MANAGEMENT -->
     <div class="card">
       <h3>Squad Roster & Tactical Roles</h3>
-      <p style="font-size: 12px; color: #666; margin-top: -6px;">Customize jersey numbers, names, GK rules (A1), and favored positions (A2).</p>
+      <p style="font-size: 12px; color: #666; margin-top: -6px;">Customize jersey numbers, names, GK rules, and favored positions.</p>
       
       <div class="add-bar">
         <input type="number" id="setupNewNum" placeholder="#" style="width: 50px;" />
@@ -1046,8 +1180,8 @@
             <tr>
               <th style="width: 50px;">#</th>
               <th>Player Name</th>
-              <th style="width: 100px;">GK Rule (A1)</th>
-              <th style="width: 90px;">Favored (A2)</th>
+              <th style="width: 100px;">GK Rule</th>
+              <th style="width: 90px;">Favored</th>
               <th style="text-align: right; width: 60px;">Action</th>
             </tr>
           </thead>
@@ -1056,20 +1190,10 @@
       </div>
     </div>
 
-    <!-- DATA BACKUP & RESTORE -->
+    <!-- SOUND, LEAD-TIME WARNING & HARDWARE SETTINGS -->
     <div class="card">
-      <h3>Data Backup & Restore</h3>
-      <p style="font-size: 12px; color: #666; margin-top: -6px;">Export your complete squad season to CSV or restore from an existing file.</p>
-      <div style="display: flex; gap: 8px;">
-        <button onclick="exportToCSV(false)" style="flex: 1;">📥 Export CSV Backup</button>
-        <button class="secondary" onclick="triggerCSVImport()" style="flex: 1;">📤 Import CSV File</button>
-      </div>
-    </div>
-
-    <!-- SOUND & HARDWARE SETTINGS (WITH D1 WARNING CHIME & D2 SUNLIGHT) -->
-    <div class="card">
-      <h3>Buzzer, Alerts & Display Settings</h3>
-      <p style="font-size: 12px; color: #666; margin-top: -6px;">Customize sideline alerts, warnings, and sunlight visibility.</p>
+      <h3>Buzzer, Touchline Warning & Display</h3>
+      <p style="font-size: 12px; color: #666; margin-top: -6px;">Customize sideline alerts, prep warning lead time, and sunlight mode.</p>
 
       <div class="setting-row">
         <div>
@@ -1088,22 +1212,29 @@
         </div>
       </div>
 
-      <!-- D1: 30-Second Warning Chime -->
+      <!-- CONFIGURABLE WARNING LEAD TIME -->
       <div class="setting-row">
         <div>
-          <b>30-Second Warning Chime (D1)</b>
-          <div class="setting-desc">Plays a double-beep 30s before shift ends to gather bench subs.</div>
+          <b>Prep Subs Warning Lead Time</b>
+          <div class="setting-desc">How early to chime and display subs before shift expires.</div>
         </div>
         <div>
-          <input type="checkbox" id="warningChimeToggle" style="transform: scale(1.4); cursor: pointer;" onchange="updateSettings()">
+          <select id="warningLeadTimeSelect" onchange="updateSettings()" style="font-weight: bold;">
+            <option value="0">Off</option>
+            <option value="15">15 seconds</option>
+            <option value="30" selected>30 seconds</option>
+            <option value="45">45 seconds</option>
+            <option value="60">60 seconds (1 min)</option>
+            <option value="90">90 seconds</option>
+            <option value="120">120 seconds (2 mins)</option>
+          </select>
         </div>
       </div>
 
-      <!-- D2: Sunlight Mode -->
       <div class="setting-row">
         <div>
-          <b>Direct Sunlight Mode (D2)</b>
-          <div class="setting-desc">Ultra-high contrast black/white theme for bright outdoor turf.</div>
+          <b>Direct Sunlight Mode</b>
+          <div class="setting-desc">Ultra-high contrast black/white theme for bright turf.</div>
         </div>
         <div>
           <input type="checkbox" id="sunlightModeToggle" style="transform: scale(1.4); cursor: pointer;" onchange="toggleSunlightFromCheckbox()">
@@ -1131,6 +1262,16 @@
         </div>
       </div>
     </div>
+
+    <!-- DATA BACKUP & RESTORE -->
+    <div class="card">
+      <h3>Data Backup & Restore</h3>
+      <p style="font-size: 12px; color: #666; margin-top: -6px;">Export your complete season to CSV or restore from an existing file.</p>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="exportToCSV(false)" style="flex: 1;">📥 Export CSV Backup</button>
+        <button class="secondary" onclick="triggerCSVImport()" style="flex: 1;">📤 Import CSV File</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1150,8 +1291,8 @@
       }
     }
 
-    // ==================== C3: MULTI-SQUAD MANAGEMENT ====================
-    let squadStore = safeLoad('soccer_squad_registry_v22', {
+    // ==================== MULTI-SQUAD REGISTRY ====================
+    let squadStore = safeLoad('soccer_squad_registry_v23', {
       activeId: 'default',
       squads: [
         { id: 'default', name: '⚡ Austin Thunder FC' }
@@ -1168,7 +1309,7 @@
       teamName = (name && name.trim()) ? name.trim() : "⚡ Thunder FC";
       const s = squadStore.squads.find(x => x.id === squadStore.activeId);
       if (s) s.name = teamName;
-      localStorage.setItem('soccer_squad_registry_v22', JSON.stringify(squadStore));
+      localStorage.setItem('soccer_squad_registry_v23', JSON.stringify(squadStore));
       localStorage.setItem(getStorageKey('team_name'), JSON.stringify(teamName));
       document.getElementById('topTeamName').innerText = teamName;
       document.getElementById('teamNameInput').value = teamName;
@@ -1188,7 +1329,7 @@
     function switchActiveSquad(squadId) {
       if (squadId === squadStore.activeId) return;
       squadStore.activeId = squadId;
-      localStorage.setItem('soccer_squad_registry_v22', JSON.stringify(squadStore));
+      localStorage.setItem('soccer_squad_registry_v23', JSON.stringify(squadStore));
       location.reload();
     }
 
@@ -1198,7 +1339,7 @@
       const newId = 'squad_' + Date.now();
       squadStore.squads.push({ id: newId, name: name.trim() });
       squadStore.activeId = newId;
-      localStorage.setItem('soccer_squad_registry_v22', JSON.stringify(squadStore));
+      localStorage.setItem('soccer_squad_registry_v23', JSON.stringify(squadStore));
       location.reload();
     }
 
@@ -1210,16 +1351,16 @@
       if (confirm(`Delete '${teamName}' and all its season records?`)) {
         squadStore.squads = squadStore.squads.filter(s => s.id !== squadStore.activeId);
         squadStore.activeId = squadStore.squads[0].id;
-        localStorage.setItem('soccer_squad_registry_v22', JSON.stringify(squadStore));
+        localStorage.setItem('soccer_squad_registry_v23', JSON.stringify(squadStore));
         location.reload();
       }
     }
 
-    // ==================== APP SETTINGS & SUNLIGHT MODE (D2) ====================
-    let appSettings = safeLoad('soccer_settings_v22', {
+    // ==================== APP SETTINGS ====================
+    let appSettings = safeLoad('soccer_settings_v23', {
       soundType: 'whistle',
       continuousAlarm: false,
-      warningChime: true,
+      warningLeadTime: 30, // seconds before end of shift
       sunlightMode: false,
       volume: 0.7
     });
@@ -1238,7 +1379,7 @@
         document.getElementById('sunlightBtn').innerText = '☀️ Sunlight: OFF';
         document.getElementById('sunlightModeToggle').checked = false;
       }
-      localStorage.setItem('soccer_settings_v22', JSON.stringify(appSettings));
+      localStorage.setItem('soccer_settings_v23', JSON.stringify(appSettings));
     }
 
     function toggleSunlightMode() {
@@ -1252,16 +1393,16 @@
     function updateSettings() {
       appSettings.soundType = document.getElementById('soundTypeSelect').value;
       appSettings.continuousAlarm = document.getElementById('continuousAlarmToggle').checked;
-      appSettings.warningChime = document.getElementById('warningChimeToggle').checked;
+      appSettings.warningLeadTime = parseInt(document.getElementById('warningLeadTimeSelect').value) || 0;
       appSettings.volume = parseFloat(document.getElementById('volumeSlider').value);
       document.getElementById('volumeLabel').innerText = `${Math.round(appSettings.volume * 100)}%`;
-      localStorage.setItem('soccer_settings_v22', JSON.stringify(appSettings));
+      localStorage.setItem('soccer_settings_v23', JSON.stringify(appSettings));
     }
 
     function initSettingsUI() {
       document.getElementById('soundTypeSelect').value = appSettings.soundType || 'whistle';
       document.getElementById('continuousAlarmToggle').checked = !!appSettings.continuousAlarm;
-      document.getElementById('warningChimeToggle').checked = appSettings.warningChime !== false;
+      document.getElementById('warningLeadTimeSelect').value = appSettings.warningLeadTime !== undefined ? String(appSettings.warningLeadTime) : "30";
       document.getElementById('volumeSlider').value = appSettings.volume || 0.7;
       document.getElementById('volumeLabel').innerText = `${Math.round((appSettings.volume || 0.7) * 100)}%`;
       document.getElementById('teamNameInput').value = teamName;
@@ -1269,7 +1410,7 @@
       applySunlightMode(!!appSettings.sunlightMode);
     }
 
-    // ==================== AUDIO SYNTHESIZERS (WITH D1 WARNING) ====================
+    // ==================== AUDIO SYNTHESIZERS ====================
     function playSelectedTone(preview = false) {
       const ctx = getAudioCtx();
       const vol = preview ? (appSettings.volume || 0.7) : (appSettings.volume || 0.7);
@@ -1355,8 +1496,7 @@
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     }
 
-    // D1: 30-Second Warning Chime
-    function play30SecWarningTone() {
+    function playPrepWarningTone() {
       const ctx = getAudioCtx();
       const vol = (appSettings.volume || 0.7) * 0.75;
       [0, 0.18].forEach(offset => {
@@ -1396,6 +1536,7 @@
         alarmLoopInterval = null;
       }
       document.getElementById('alarmActionBar').style.display = 'none';
+      document.getElementById('prepWarningBanner').style.display = 'none';
     }
 
     let wakeLock = null;
@@ -1416,6 +1557,7 @@
         renderAttendanceTable();
         renderPitch();
         updateBalanceBar();
+        renderUpcomingRotations();
       } else if (tabId === 'statsTab') {
         document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
         document.getElementById('statsTab').classList.add('active');
@@ -1429,7 +1571,7 @@
       }
     }
 
-    // ==================== STATE PER SQUAD ====================
+    // ==================== STATE MANAGEMENT ====================
     let timerInterval = null;
     let timerState = safeLoad(getStorageKey('timer'), {
       running: false,
@@ -1443,6 +1585,7 @@
       oppGoals: 0
     });
     let gameConfig = safeLoad(getStorageKey('game_config'), {
+      scheduleMode: 'auto', // 'auto' or 'custom'
       gameDuration: 40,
       shiftDuration: 6,
       suggestedShifts: 6
@@ -1495,7 +1638,6 @@
       }
     }
 
-    // ==================== B3: LIVE OPPONENT SCORE TRACKING ====================
     function adjustOpponentScore(delta) {
       timerState.oppGoals = Math.max(0, (timerState.oppGoals || 0) + delta);
       document.getElementById('matchOpponentGoals').innerText = timerState.oppGoals;
@@ -1528,7 +1670,7 @@
       const completed = timerState.rotationsCompleted || 0;
       const currentShift = timerState.shift || 1;
 
-      document.getElementById('shiftIndicator').innerText = `SHIFT ${currentShift} OF ${totalSuggested}`;
+      document.getElementById('shiftIndicator').innerText = `SHIFT ${currentShift} OF${totalSuggested}`;
       document.getElementById('rotationsCompletedText').innerText = `${completed} rotation${completed === 1 ? '' : 's'} completed`;
 
       const pct = Math.min(100, Math.round((completed / Math.max(1, totalSuggested - 1)) * 100));
@@ -1574,14 +1716,19 @@
       }
     }
 
+    // ==================== ROTATION & SCHEDULE CALCULATION WITH INEQUALITY FORECAST ====================
+    function toggleScheduleMode(mode) {
+      gameConfig.scheduleMode = mode;
+      document.getElementById('autoScheduleControls').style.display = mode === 'auto' ? 'block' : 'none';
+      document.getElementById('customScheduleControls').style.display = mode === 'custom' ? 'block' : 'none';
+      calculateFairPlay();
+    }
+
     function calculateFairPlay() {
       formation.GK = parseInt(document.getElementById('numGK').value) || 0;
       formation.DEF = parseInt(document.getElementById('numDEF').value) || 0;
       formation.MID = parseInt(document.getElementById('numMID').value) || 0;
       formation.FWD = parseInt(document.getElementById('numFWD').value) || 0;
-      
-      const gameMins = parseInt(document.getElementById('gameDurationSelect').value) || 40;
-      gameConfig.gameDuration = gameMins;
 
       const fieldSpots = formation.GK + formation.DEF + formation.MID + formation.FWD;
       const attending = players.filter(p => p.present).length;
@@ -1590,42 +1737,119 @@
       if (attending === 0 || fieldSpots === 0) {
         banner.innerHTML = "Check attendance and field spots.";
         updateBalanceBar();
+        renderInequalityWarning(null);
         return;
       }
 
+      let gameMins, shiftMinutes, totalShifts;
+
+      if (gameConfig.scheduleMode === 'custom') {
+        shiftMinutes = parseFloat(document.getElementById('customShiftMins').value) || 6;
+        totalShifts = parseInt(document.getElementById('customShiftCount').value) || 6;
+        gameMins = Math.round(shiftMinutes * totalShifts);
+        gameConfig.gameDuration = gameMins;
+        gameConfig.shiftDuration = shiftMinutes;
+        gameConfig.suggestedShifts = totalShifts;
+      } else {
+        gameMins = parseInt(document.getElementById('gameDurationSelect').value) || 40;
+        gameConfig.gameDuration = gameMins;
+
+        if (attending <= fieldSpots) {
+          shiftMinutes = gameMins;
+          totalShifts = 1;
+        } else {
+          if (gameMins <= 10) totalShifts = 2;
+          else if (gameMins <= 15) totalShifts = 3;
+          else {
+            totalShifts = Math.round(gameMins / 6);
+            if (totalShifts < 4) totalShifts = 4;
+          }
+          shiftMinutes = parseFloat((gameMins / totalShifts).toFixed(1));
+        }
+        gameConfig.shiftDuration = shiftMinutes;
+        gameConfig.suggestedShifts = totalShifts;
+      }
+
+      const totalPlayerMinutes = gameMins * fieldSpots;
+      const fairTimePerPlayer = (totalPlayerMinutes / attending).toFixed(1);
+
       if (attending <= fieldSpots) {
-        gameConfig.shiftDuration = gameMins;
-        gameConfig.suggestedShifts = 1;
         banner.innerHTML = `<b>No bench needed!</b> ${attending} players for ${fieldSpots} field slots.<br>Everyone plays all <b>${gameMins} minutes</b>.`;
       } else {
-        const totalPlayerMinutes = gameMins * fieldSpots;
-        const fairTimePerPlayer = (totalPlayerMinutes / attending).toFixed(1);
-        
-        let bestShifts;
-        if (gameMins <= 10) {
-          bestShifts = 2;
-        } else if (gameMins <= 15) {
-          bestShifts = 3;
-        } else {
-          bestShifts = Math.round(gameMins / 6);
-          if (bestShifts < 4) bestShifts = 4;
-        }
-
-        let shiftMinutes = (gameMins / bestShifts).toFixed(1);
-        gameConfig.shiftDuration = parseFloat(shiftMinutes);
-        gameConfig.suggestedShifts = bestShifts;
-
-        banner.innerHTML = `👥 <b>${attending} present</b> | <b>${fieldSpots} field slots</b>.<br>⏱ Target: <b>${fairTimePerPlayer} mins</b> per player.<br>🔄 <b>${bestShifts} shifts</b> (~${shiftMinutes} min each).`;
-
-        if (!timerState.running && !timerState.matchActive) {
-          timerState.totalDuration = Math.round(parseFloat(shiftMinutes) * 60);
-          timerState.remaining = timerState.totalDuration;
-          updateTimerDisplay();
-        }
+        banner.innerHTML = `
+          👥 <b>${attending} present</b> \vert{} <b>${fieldSpots} field slots</b>.<br>
+          ⏱ Target: <b>${fairTimePerPlayer} mins</b> per player.<br>
+          🔄 <b>${totalShifts} shifts</b> (~${shiftMinutes} min each).
+        `;
       }
+
+      // Pre-Game Theoretical Equity Simulation
+      evaluateScheduleInequality(attending, fieldSpots, totalShifts, shiftMinutes);
+
+      if (!timerState.running && !timerState.matchActive) {
+        timerState.totalDuration = Math.round(shiftMinutes * 60);
+        timerState.remaining = timerState.totalDuration;
+        updateTimerDisplay();
+      }
+
       updateRotationDisplay();
       updateBalanceBar();
+      renderUpcomingRotations();
       saveAll();
+    }
+
+    // INEQUALITY FORECAST EVALUATOR
+    function evaluateScheduleInequality(attending, fieldSpots, totalShifts, shiftMinutes) {
+      if (attending <= fieldSpots) {
+        renderInequalityWarning({ isPerfect: true, msg: "🌟 <b>Perfect Equity:</b> Zero bench needed. All players play 100% of the match." });
+        return;
+      }
+
+      const totalSlotsAvailable = fieldSpots * totalShifts;
+      const baseShifts = Math.floor(totalSlotsAvailable / attending);
+      const extraSlots = totalSlotsAvailable % attending;
+      const maxPlayerShifts = baseShifts + (extraSlots > 0 ? 1 : 0);
+      const minPlayerShifts = baseShifts;
+      const spreadShifts = maxPlayerShifts - minPlayerShifts;
+      const minuteDisparity = Math.round(spreadShifts * shiftMinutes);
+
+      if (spreadShifts === 0) {
+        renderInequalityWarning({
+          isPerfect: true,
+          msg: `🌟 <b>Perfect Mathematical Equity!</b> Every attending player will receive exactly <b>${baseShifts} shifts</b> (~${(baseShifts * shiftMinutes).toFixed(0)} mins).`
+        });
+      } else if (spreadShifts === 1) {
+        renderInequalityWarning({
+          isBalanced: true,
+          msg: `✓ <b>Balanced Youth Rotation (Fair Play Standard):</b> ${extraSlots} player(s) will play ${maxPlayerShifts} shifts, and${attending - extraSlots} will play ${minPlayerShifts} shifts (Disparity: only 1 shift / ~${minuteDisparity}m).`
+        });
+      } else {
+        renderInequalityWarning({
+          isImbalanced: true,
+          msg: `⚠️ <b>High Imbalance Alert:</b> Playing time will be significantly uneven! Spread is <b>${spreadShifts} shifts (~${minuteDisparity} min gap)</b>. Consider adjusting to ${totalShifts + 1} shifts or modifying shift duration to equalize minutes.`
+        });
+      }
+    }
+
+    function renderInequalityWarning(info) {
+      const gBanner = document.getElementById('inequalityAlertBanner');
+      const sBanner = document.getElementById('setupInequalityBanner');
+      if (!info) {
+        if (gBanner) gBanner.style.display = 'none';
+        if (sBanner) sBanner.style.display = 'none';
+        return;
+      }
+
+      [gBanner, sBanner].forEach(b => {
+        if (!b) return;
+        b.style.display = 'block';
+        b.innerHTML = info.msg;
+        if (info.isPerfect || info.isBalanced) {
+          b.className = "inequality-alert-banner balanced";
+        } else {
+          b.className = "inequality-alert-banner";
+        }
+      });
     }
 
     function initTimerFromStorage() {
@@ -1640,7 +1864,13 @@
       updateBalanceBar();
       updateGenerateButtonState();
       updateScoreboard();
-      document.getElementById('gameDurationSelect').value = gameConfig.gameDuration;
+      renderUpcomingRotations();
+      
+      document.getElementById('scheduleModeSelect').value = gameConfig.scheduleMode || 'auto';
+      toggleScheduleMode(gameConfig.scheduleMode || 'auto');
+      document.getElementById('gameDurationSelect').value = gameConfig.gameDuration || 40;
+      document.getElementById('customShiftMins').value = gameConfig.shiftDuration || 6;
+      document.getElementById('customShiftCount').value = gameConfig.suggestedShifts || 6;
 
       if (timerState.running && timerState.remaining > 0) {
         startTimerLoop();
@@ -1667,10 +1897,12 @@
           saveAll();
           updateTimerDisplay();
 
-          // D1: 30-Second Warning Chime Trigger
-          if (appSettings.warningChime && timerState.remaining === 30 && !warningChimeTriggered) {
-            play30SecWarningTone();
+          // Configurable Touchline Prep Warning Alert
+          const leadTime = appSettings.warningLeadTime || 0;
+          if (leadTime > 0 && timerState.remaining === leadTime && !warningChimeTriggered) {
+            playPrepWarningTone();
             warningChimeTriggered = true;
+            showTouchlinePrepAlert(leadTime);
           }
 
           if (timerState.remaining === 0) {
@@ -1678,6 +1910,7 @@
             triggerShiftAlarm();
             generateLineupInternal();
             warningChimeTriggered = false;
+            document.getElementById('prepWarningBanner').style.display = 'none';
 
             if (!appSettings.continuousAlarm) {
               alert("⏰ Shift completed! Substitution callouts are ready on screen.");
@@ -1685,6 +1918,24 @@
           }
         }
       }, 500);
+    }
+
+    function showTouchlinePrepAlert(leadTime) {
+      const banner = document.getElementById('prepWarningBanner');
+      const textEl = document.getElementById('prepWarningText');
+      if (!banner || !textEl) return;
+
+      // Check upcoming sub entries
+      const nextSubs = calculateProjectedShift(1);
+      let subNames = "";
+      if (nextSubs && nextSubs.entering && nextSubs.entering.length > 0) {
+        subNames = "Send to touchline: " + nextSubs.entering.map(p => `#${p.number}${p.name}`).join(', ');
+      } else {
+        subNames = "Prepare players along the sideline.";
+      }
+
+      textEl.innerText = `${leadTime}s warning!${subNames}`;
+      banner.style.display = 'block';
     }
 
     function startTimer() {
@@ -1709,20 +1960,21 @@
       pauseTimer();
       acknowledgeAlarm();
       warningChimeTriggered = false;
+      document.getElementById('prepWarningBanner').style.display = 'none';
       timerState.remaining = timerState.totalDuration;
       saveAll();
       updateTimerDisplay();
     }
 
-    // ==================== B1: HALFTIME BREAK LOGIC ====================
+    // ==================== HALFTIME BREAK ====================
     let halftimeInterval = null;
-    let halftimeSecs = 180; // 3 minutes
+    let halftimeSecs = 180;
 
     function openHalftimeModal() {
       pauseTimer();
       acknowledgeAlarm();
       const currentMatchGoals = players.reduce((sum, p) => sum + (p.matchGoals || 0), 0);
-      document.getElementById('halftimeScoreDisplay').innerText = `${currentMatchGoals} - ${timerState.oppGoals || 0}`;
+      document.getElementById('halftimeScoreDisplay').innerText = `${currentMatchGoals} -${timerState.oppGoals || 0}`;
       halftimeSecs = 180;
       updateHalftimeModalTimer();
       document.getElementById('halftimeModal').style.display = 'flex';
@@ -1759,7 +2011,7 @@
       document.getElementById('halftimeModal').style.display = 'none';
     }
 
-    // ==================== PLAYER SQUAD & RULES MANAGEMENT ====================
+    // ==================== ROSTER & SQUAD MANAGEMENT ====================
     function addPlayerFromTab(numInputId, nameInputId) {
       const nameInput = document.getElementById(nameInputId);
       const numInput = document.getElementById(numInputId);
@@ -1804,6 +2056,7 @@
         renderPitch();
         renderSeasonStats();
         renderAttendanceTable();
+        renderUpcomingRotations();
       }
     }
 
@@ -1813,6 +2066,7 @@
       saveAll();
       renderAttendanceTable();
       calculateFairPlay();
+      renderUpcomingRotations();
     }
 
     function deletePlayer(id) {
@@ -1829,6 +2083,7 @@
         renderPitch();
         calculateFairPlay();
         updateScoreboard();
+        renderUpcomingRotations();
       }
     }
 
@@ -1863,7 +2118,6 @@
       updateBalanceBar();
     }
 
-    // Roster Management with A1 (GK Rules) & A2 (Preferred Pos)
     function renderManageRoster() {
       const tbody = document.getElementById('manageRosterTableBody');
       tbody.innerHTML = players.map(p => `
@@ -1927,7 +2181,7 @@
         else if (m.result === 'L') totalL++;
       });
 
-      document.getElementById('teamRecord').innerText = `${totalW} - ${totalD} - ${totalL}`;
+      document.getElementById('teamRecord').innerText = `${totalW} - ${totalD} -${totalL}`;
       document.getElementById('teamTotalMatches').innerText = matchHistory.length;
       document.getElementById('teamTotalGoalsScored').innerText = totalGF;
       document.getElementById('teamTotalGoalsAgainst').innerText = totalGA;
@@ -1966,7 +2220,7 @@
       `;
     }
 
-    // ==================== LINEUP ENGINE (WITH A1 GK & A2 POS PREFERENCES) ====================
+    // ==================== LINEUP ENGINE & UPCOMING 2 ROTATIONS LOOKAHEAD ====================
     function generateLineup() {
       generateLineupInternal();
       timerState.matchActive = true;
@@ -1985,58 +2239,146 @@
         previousAssignment = JSON.parse(JSON.stringify(currentAssignment));
       }
 
-      const totalSlots = formation.GK + formation.DEF + formation.MID + formation.FWD;
-
-      // Equal play-time sorting first
-      let pool = [...available].sort((a, b) => {
-        let diff = a.stats.totalPlayed - b.stats.totalPlayed;
-        return diff !== 0 ? diff : (Math.random() - 0.5);
-      });
-
-      const onField = pool.slice(0, totalSlots);
-      const onBench = pool.slice(totalSlots);
-      currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: onBench };
-
-      let unassigned = [...onField];
-
-      // A1: Dedicated GK selection
-      if (formation.GK > 0) {
-        let gkCandidates = unassigned.filter(p => p.gkRule === 'dedicated');
-        if (gkCandidates.length === 0) {
-          gkCandidates = unassigned.filter(p => p.gkRule !== 'never');
-        }
-        if (gkCandidates.length === 0) {
-          gkCandidates = unassigned; // fallback if all never
-        }
-        gkCandidates.sort((a, b) => a.stats.GK - b.stats.GK || (Math.random() - 0.5));
-        let gk = gkCandidates[0];
-        currentAssignment.GK.push(gk);
-        unassigned = unassigned.filter(p => p.id !== gk.id);
-      }
-
-      // A2: Preferred Outfield Positions
-      ['DEF', 'MID', 'FWD'].forEach(pos => {
-        let needed = formation[pos] || 0;
-        for (let i = 0; i < needed; i++) {
-          if (unassigned.length === 0) break;
-          // Look for player preferring this position
-          let favIndex = unassigned.findIndex(p => p.preferredPos === pos);
-          let chosenPlayer = null;
-          if (favIndex !== -1) {
-            chosenPlayer = unassigned.splice(favIndex, 1)[0];
-          } else {
-            // Otherwise choose player who played this position least
-            unassigned.sort((a, b) => a.stats[pos] - b.stats[pos] || (Math.random() - 0.5));
-            chosenPlayer = unassigned.shift();
-          }
-          currentAssignment[pos].push(chosenPlayer);
-        }
-      });
+      const assignment = computeShiftAssignment(available, players);
+      currentAssignment = assignment;
 
       saveAll();
       renderPitch();
       renderSubstitutionCallout();
       updateBalanceBar();
+      renderUpcomingRotations();
+    }
+
+    // Pure assignment calculator based on current player stats
+    function computeShiftAssignment(availablePool, basePlayerStats) {
+      const totalSlots = formation.GK + formation.DEF + formation.MID + formation.FWD;
+
+      let pool = [...availablePool].sort((a, b) => {
+        let diff = (a.simShifts ?? a.stats.totalPlayed) - (b.simShifts ?? b.stats.totalPlayed);
+        return diff !== 0 ? diff : (Math.random() - 0.5);
+      });
+
+      const onField = pool.slice(0, totalSlots);
+      const onBench = pool.slice(totalSlots);
+      const assignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: onBench };
+
+      let unassigned = [...onField];
+
+      // GK Rule
+      if (formation.GK > 0) {
+        let gkCandidates = unassigned.filter(p => p.gkRule === 'dedicated');
+        if (gkCandidates.length === 0) gkCandidates = unassigned.filter(p => p.gkRule !== 'never');
+        if (gkCandidates.length === 0) gkCandidates = unassigned;
+        gkCandidates.sort((a, b) => (a.stats.GK || 0) - (b.stats.GK || 0) || (Math.random() - 0.5));
+        let gk = gkCandidates[0];
+        assignment.GK.push(gk);
+        unassigned = unassigned.filter(p => p.id !== gk.id);
+      }
+
+      // Outfield Positions
+      ['DEF', 'MID', 'FWD'].forEach(pos => {
+        let needed = formation[pos] || 0;
+        for (let i = 0; i < needed; i++) {
+          if (unassigned.length === 0) break;
+          let favIndex = unassigned.findIndex(p => p.preferredPos === pos);
+          let chosen = null;
+          if (favIndex !== -1) {
+            chosen = unassigned.splice(favIndex, 1)[0];
+          } else {
+            unassigned.sort((a, b) => (a.stats[pos] || 0) - (b.stats[pos] || 0) || (Math.random() - 0.5));
+            chosen = unassigned.shift();
+          }
+          assignment[pos].push(chosen);
+        }
+      });
+
+      return assignment;
+    }
+
+    // PROJECT NEXT 2 SHIFTS IN ADVANCE
+    function calculateProjectedShift(stepsAhead = 1) {
+      const available = players.filter(p => p.present);
+      if (available.length === 0) return null;
+
+      // Clone simulation state
+      let simPlayers = available.map(p => ({
+        ...p,
+        simShifts: p.stats.totalPlayed
+      }));
+
+      // If active field players exist, simulate current shift completing
+      const activeIds = ['GK', 'DEF', 'MID', 'FWD'].flatMap(pos => (currentAssignment[pos] || []).map(x => x.id));
+      simPlayers.forEach(p => {
+        if (activeIds.includes(p.id)) p.simShifts++;
+      });
+
+      // Shift +1
+      let assignmentPlus1 = computeShiftAssignment(simPlayers, players);
+      if (stepsAhead === 1) {
+        return formatProjectedShift(assignmentPlus1, timerState.shift + 1);
+      }
+
+      // Shift +2
+      const plus1Ids = ['GK', 'DEF', 'MID', 'FWD'].flatMap(pos => assignmentPlus1[pos].map(x => x.id));
+      simPlayers.forEach(p => {
+        if (plus1Ids.includes(p.id)) p.simShifts++;
+      });
+
+      let assignmentPlus2 = computeShiftAssignment(simPlayers, players);
+      return formatProjectedShift(assignmentPlus2, timerState.shift + 2);
+    }
+
+    function formatProjectedShift(assignment, shiftNumber) {
+      const field = ['GK', 'DEF', 'MID', 'FWD'].flatMap(pos => assignment[pos].map(p => ({ ...p, pos })));
+      const bench = assignment.BENCH;
+      return { shiftNumber, field, bench, entering: bench ? bench : [] };
+    }
+
+    function renderUpcomingRotations() {
+      const nextDiv = document.getElementById('previewShiftNext');
+      const afterDiv = document.getElementById('previewShiftAfter');
+      if (!nextDiv || !afterDiv) return;
+
+      const p1 = calculateProjectedShift(1);
+      const p2 = calculateProjectedShift(2);
+
+      if (!p1 || p1.field.length === 0) {
+        nextDiv.innerHTML = `<p style="color: #888; font-size: 11px;">Generate a lineup to view advance projections.</p>`;
+        afterDiv.innerHTML = ``;
+        return;
+      }
+
+      nextDiv.innerHTML = `
+        <div class="preview-shift-block">
+          <div style="font-weight: bold; color: #1b5e20; margin-bottom: 4px;">
+            NEXT: Shift ${p1.shiftNumber} (Projected)
+          </div>
+          <div><b>Field (${p1.field.length}):</b> ${p1.field.map(p => `<span class="preview-pill-field">#${p.number} ${p.name} <small>(${p.pos})</small></span>`).join('')}</div>
+          <div style="margin-top: 4px;"><b>Bench:</b> ${p1.bench.length > 0 ? p1.bench.map(p => `<span class="preview-pill-bench">#${p.number}${p.name}</span>`).join('') : '<span style="color:#888;">None</span>'}</div>
+        </div>
+      `;
+
+      afterDiv.innerHTML = `
+        <div class="preview-shift-block">
+          <div style="font-weight: bold; color: #0277bd; margin-bottom: 4px;">
+            IN 2 SHIFTS: Shift ${p2.shiftNumber} (Projected)
+          </div>
+          <div><b>Field (${p2.field.length}):</b> ${p2.field.map(p => `<span class="preview-pill-field">#${p.number} ${p.name} <small>(${p.pos})</small></span>`).join('')}</div>
+          <div style="margin-top: 4px;"><b>Bench:</b> ${p2.bench.length > 0 ? p2.bench.map(p => `<span class="preview-pill-bench">#${p.number}${p.name}</span>`).join('') : '<span style="color:#888;">None</span>'}</div>
+        </div>
+      `;
+    }
+
+    function toggleUpcomingPreview() {
+      const content = document.getElementById('previewQueueContent');
+      const icon = document.getElementById('previewToggleIcon');
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.innerText = '▼';
+      } else {
+        content.style.display = 'none';
+        icon.innerText = '▶';
+      }
     }
 
     function renderSubstitutionCallout() {
@@ -2084,7 +2426,7 @@
         rowsHtml += `
           <tr>
             <td>
-              ${inPlayer ? `<span class="sub-tag-in">🟢 IN</span> <b>#${inPlayer.number}</b> ${inPlayer.name} <small style="color: #555;">(${inPlayer.assignedPos})</small>` : `<span style="color:#aaa;">—</span>`}
+              ${inPlayer ? `<span class="sub-tag-in">🟢 IN</span> <b>#${inPlayer.number}</b>${inPlayer.name} <small style="color: #555;">(${inPlayer.assignedPos})</small>` : `<span style="color:#aaa;">—</span>`}
             </td>
             <td style="text-align: center; color: #999; font-weight: bold;">➔</td>
             <td>
@@ -2107,17 +2449,15 @@
       `;
     }
 
-    // ==================== A3: TOUCH & TAP-TO-SWAP OVERRIDES ====================
+    // ==================== TOUCH & TAP-TO-SWAP OVERRIDES ====================
     let selectedSwapSource = null;
 
     function handleTokenClick(playerId, currentPos) {
       if (!selectedSwapSource) {
-        // Select first player
         selectedSwapSource = { playerId, pos: currentPos };
         document.getElementById('swapHintBanner').style.display = 'block';
         highlightSelectedTokens();
       } else {
-        // Swap with second player
         if (selectedSwapSource.playerId !== playerId) {
           executeManualSwap(selectedSwapSource, { playerId, pos: currentPos });
         }
@@ -2146,11 +2486,9 @@
       const p2 = players.find(x => x.id === target.playerId);
       if (!p1 || !p2) return;
 
-      // Remove both from their respective current arrays
       currentAssignment[source.pos] = (currentAssignment[source.pos] || []).filter(x => x.id !== p1.id);
       currentAssignment[target.pos] = (currentAssignment[target.pos] || []).filter(x => x.id !== p2.id);
 
-      // Place in each other's slots
       currentAssignment[source.pos].push(p2);
       currentAssignment[target.pos].push(p1);
 
@@ -2158,6 +2496,7 @@
       renderPitch();
       renderSubstitutionCallout();
       updateBalanceBar();
+      renderUpcomingRotations();
     }
 
     function renderPitch() {
@@ -2293,11 +2632,12 @@
       renderPitch();
       renderSubstitutionCallout();
       updateBalanceBar();
+      renderUpcomingRotations();
 
       alert(`🩹 Sub confirmed: #${incoming.number} ${incoming.name} entered for #${outgoing.number} ${outgoing.name}.`);
     }
 
-    // ==================== ADVANCE ROTATION & FINISH MATCH ====================
+    // ==================== ADVANCE SHIFT & COMPLETE MATCH ====================
     function confirmShiftAndAdvance() {
       const hasFieldPlayers = ['GK', 'DEF', 'MID', 'FWD'].some(pos => currentAssignment[pos]?.length > 0);
       if (!hasFieldPlayers) {
@@ -2345,7 +2685,7 @@
 
       const msg = manual 
         ? "Do you want to conclude the match now and record final stats?" 
-        : `All suggested ${gameConfig.suggestedShifts} shifts have been played! Is the match finished?`;
+        : `All scheduled ${gameConfig.suggestedShifts} shifts have been played! Is the match finished?`;
 
       if (confirm(msg)) {
         let oppGoalsInput = prompt(`Final Whistle!\nYour Team Scored: ${totalTeamGoals} goals.\n\nEnter Opponent's final score:`, String(currentOpp));
@@ -2381,6 +2721,7 @@
         updateScoreboard();
         updateBalanceBar();
         updateGenerateButtonState();
+        renderUpcomingRotations();
 
         exportToCSV(true);
 
@@ -2550,8 +2891,6 @@
           timerState.shift = 1;
           timerState.rotationsCompleted = 0;
           timerState.matchActive = false;
-          timerState.period = '1st Half';
-          timerState.oppGoals = 0;
           currentAssignment = { GK: [], DEF: [], MID: [], FWD: [], BENCH: [] };
           previousAssignment = null;
 
@@ -2565,6 +2904,7 @@
           updateRotationDisplay();
           updateBalanceBar();
           updateGenerateButtonState();
+          renderUpcomingRotations();
 
           alert("✓ Season data and squad roster successfully imported!");
           switchTab('statsTab');
@@ -2600,6 +2940,7 @@
         updateRotationDisplay();
         updateBalanceBar();
         updateGenerateButtonState();
+        renderUpcomingRotations();
       }
     }
 
@@ -2619,6 +2960,7 @@
     calculateFairPlay();
     updateScoreboard();
     renderSeasonStats();
+    renderUpcomingRotations();
   </script>
 </body>
 </html>
